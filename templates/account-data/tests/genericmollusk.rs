@@ -18,6 +18,7 @@
 //! - Cross-program invocation testing patterns
 
 #[cfg(test)]
+#[allow(deprecated)]
 mod tests {
     // TODO: Update this import to match your program's crate name
     // Example: use my_program::{state::MyState, instructions::MyInstruction, ID};
@@ -81,6 +82,7 @@ mod tests {
         /// * `size` - Size in bytes for the account data
         /// * `owner` - Program that owns this account
         /// * `lamports` - Rent exemption amount (use calculate_rent_exemption if unsure)
+        #[allow(dead_code)]
         pub fn create_program_account(
             size: usize,
             owner: &Pubkey,
@@ -96,6 +98,7 @@ mod tests {
         /// # Arguments
         /// * `mollusk` - Mollusk instance to get rent sysvar from
         /// * `size` - Size in bytes of the account data
+        #[allow(dead_code)]
         pub fn calculate_rent_exemption(_mollusk: &Mollusk, size: usize) -> u64 {
             // This is a simplified calculation - in real tests you might want to use
             // the actual rent sysvar from the mollusk instance
@@ -109,6 +112,7 @@ mod tests {
         ///
         /// # Returns
         /// Vector of (Pubkey, AccountSharedData) tuples for system accounts
+        #[allow(dead_code)]
         pub fn create_system_accounts() -> Vec<(Pubkey, AccountSharedData)> {
             let (system_program_id, system_account) =
                 mollusk_svm::program::keyed_account_for_system_program();
@@ -156,6 +160,7 @@ mod tests {
         /// * `instruction` - Instruction to execute
         /// * `accounts` - Accounts required for the instruction
         /// * `expected_error` - Expected program error
+        #[allow(dead_code)]
         pub fn assert_instruction_error(
             mollusk: &Mollusk,
             instruction: &Instruction,
@@ -192,14 +197,17 @@ mod tests {
                 AccountMeta::new(pubkey, true)
             }
 
+            #[allow(dead_code)]
             pub fn writable(pubkey: Pubkey) -> AccountMeta {
                 AccountMeta::new(pubkey, false)
             }
 
+            #[allow(dead_code)]
             pub fn readonly(pubkey: Pubkey) -> AccountMeta {
                 AccountMeta::new_readonly(pubkey, false)
             }
 
+            #[allow(dead_code)]
             pub fn program(pubkey: Pubkey) -> AccountMeta {
                 AccountMeta::new_readonly(pubkey, false)
             }
@@ -256,7 +264,7 @@ mod tests {
             &[
                 (owner, owner_account.into()),
                 (address_info_pubkey, address_info_account.into()),
-                (system_program, system_account.into()),
+                (system_program, system_account),
             ],
             &[Check::account(&address_info_pubkey)
                 .data(ix_data_bytes)
@@ -300,7 +308,7 @@ mod tests {
             &instruction,
             &[
                 (owner, owner_account.into()),
-                (system_program, system_account.into()),
+                (system_program, system_account),
             ],
         );
 

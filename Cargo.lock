@@ -4338,6 +4338,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "test-cleanup"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "mollusk-svm",
+ "pinocchio",
+ "pinocchio-helper",
+ "pinocchio-log",
+ "pinocchio-pubkey",
+ "pinocchio-system",
+ "shank",
+ "solana-program-runtime",
+ "solana-sdk",
+]
+
+[[package]]
 name = "test-program"
 version = "0.1.0"
 dependencies = [

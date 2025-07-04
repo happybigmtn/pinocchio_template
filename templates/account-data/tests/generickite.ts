@@ -4,9 +4,9 @@ import { address, lamports } from '@solana/kit';
 import { getTransferSolInstruction } from '@solana-program/system';
 
 // Import generated client (will be available after running gen:client)
-// import { counterProgram } from '../clients/counter';
+// import { accountDataTemplateProgram } from '../clients/account-data-template';
 
-describe('counter - Comprehensive Kite Demo', () => {
+describe('account-data-template - Comprehensive Kite Demo', () => {
   let kite: Awaited<ReturnType<typeof connect>>;
   const programId = address('11111111111111111111111111111111'); // Will be updated after deployment
 
@@ -286,14 +286,14 @@ describe('counter - Comprehensive Kite Demo', () => {
 
   test('should demonstrate program-specific functionality', async () => {
     console.log('\n🔧 === PROGRAM-SPECIFIC TESTS ===');
-    console.log('TODO: Add tests specific to counter program functionality');
+    console.log('TODO: Add tests specific to account-data-template program functionality');
     console.log('Program ID:', programId);
     
     try {
       // TODO: Add program-specific tests here
       // Example:
       // const wallet = await kite.createWallet({ airdropAmount: lamports(1_000_000_000n) });
-      // const instruction = createcounterInstruction({ ... });
+      // const instruction = createAccountDataTemplateInstruction({ ... });
       // const signature = await kite.sendTransactionFromInstructions({
       //   feePayer: wallet,
       //   instructions: [instruction]
