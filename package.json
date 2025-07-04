@@ -4,9 +4,18 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "create": "./scripts/create-program.sh",
-    "generate": "./scripts/bun-generate.sh",
-    "deploy": "./scripts/bun-deploy.sh",
+    "new": "./scripts/create-program.sh",
+    "dep": "./scripts/dep-wrapper.sh",
+    "gen": "./scripts/gen-wrapper.sh",
+    "gen:client:account-data": "node scripts/generate-clients.js account-data",
+    "test:client:account-data": "bun test --testFiles basics/account-data/tests/account-data.test.ts",
+    "gen:idl:account-data": "shank idl --crate-root basics/account_data --out-dir idl",
+    "gen:client:counter": "node scripts/generate-clients.js counter",
+    "test:client:counter": "bun test --testFiles basics/counter/tests/counter.test.ts",
+    "gen:idl:counter": "shank idl --crate-root basics/counter --out-dir idl",
+    "gen:client:cross-program-invocation": "node scripts/generate-clients.js cross-program-invocation",
+    "test:client:cross-program-invocation": "bun test --testFiles basics/cross-program-invocation/tests/cross-program-invocation.test.ts",
+    "gen:idl:cross-program-invocation": "shank idl --crate-root basics/cross_program_invocation --out-dir idl"
   },
   "devDependencies": {
     "@codama/nodes-from-anchor": "^1.2.1",

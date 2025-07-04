@@ -225,11 +225,17 @@ run_tests() {
     local test_script="test:client:$(echo $PROGRAM_NAME | tr '_' '-')"
     
     if grep -q "\"$test_script\"" package.json; then
+        echo -e "${YELLOW}Running tests with optimized settings for rate limiting...${NC}"
+        # Set environment variables for better test performance
+        export NODE_ENV=test
+        export TEST_TIMEOUT=300000
+        
         bun run "$test_script"
         if [ $? -eq 0 ]; then
             echo -e "${GREEN}✓ Tests passed${NC}"
         else
-            echo -e "${YELLOW}Warning: Some tests failed${NC}"
+            echo -e "${YELLOW}Warning: Some tests failed (this may be due to RPC rate limiting)${NC}"
+            echo -e "${YELLOW}Consider running tests individually with longer delays if needed${NC}"
         fi
     else
         echo -e "${YELLOW}No test script found for $PROGRAM_NAME${NC}"

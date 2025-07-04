@@ -44,10 +44,31 @@ add_program_scripts() {
         const fs = require('fs');
         const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
         
-        // Add new scripts
-        packageJson.scripts['gen:client:$script_name'] = 'node scripts/generate-clients.js $program_name';
-        packageJson.scripts['test:client:$script_name'] = 'bun test --testFiles $category/$program_name/tests/$script_name.test.ts';
-        packageJson.scripts['gen:idl:$script_name'] = 'shank idl --crate-root $category/$file_name --out-dir idl';
+        // Check if scripts already exist to avoid duplicates
+        const genClientKey = 'gen:client:$script_name';
+        const testClientKey = 'test:client:$script_name';
+        const genIdlKey = 'gen:idl:$script_name';
+        
+        let added = false;
+        
+        // Add new scripts only if they don't exist
+        if (!packageJson.scripts[genClientKey]) {
+            packageJson.scripts[genClientKey] = 'node scripts/generate-clients.js $program_name';
+            added = true;
+        }
+        if (!packageJson.scripts[testClientKey]) {
+            packageJson.scripts[testClientKey] = 'bun test --testFiles $category/$program_name/tests/$script_name.test.ts';
+            added = true;
+        }
+        if (!packageJson.scripts[genIdlKey]) {
+            packageJson.scripts[genIdlKey] = 'shank idl --crate-root $category/$file_name --out-dir idl';
+            added = true;
+        }
+        
+        if (!added) {
+            console.log('Scripts already exist, skipping...');
+            process.exit(0);
+        }
         
         // Write back to file with proper formatting
         fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\n');
@@ -115,8 +136,12 @@ clean_all_scripts() {
         const fs = require('fs');
         const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
         
-        // Keep only non-program scripts (if any)
-        const newScripts = {};
+        // Keep core workflow scripts and add program-specific ones
+        const newScripts = {
+            'new': './scripts/create-program.sh',
+            'dep': './scripts/dep-wrapper.sh',
+            'gen': './scripts/gen-wrapper.sh'
+        };
         
         // Read existing programs from temp file
         const existingProgramsText = fs.readFileSync('/tmp/existing_programs.txt', 'utf8').trim();

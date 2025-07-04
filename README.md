@@ -10,74 +10,94 @@ The template system now includes intelligent bun aliases that automatically dete
 
 ```bash
 # Create a new program
-bun create my-counter --category=basics
+bun new my-counter --category=basics
 
 # Navigate to your program
 cd basics/my-counter
 
 # Make your code changes...
 
-# Generate IDL and TypeScript client (auto-detects program)
-bun generate
+# Generate IDL and TypeScript client
+bun gen my-counter --category=basics
 
-# Deploy to devnet (auto-detects program)
-bun run deploy
+# Deploy to devnet
+bun dep my-counter --category=basics
 
 # Deploy to testnet
-bun run deploy --network=testnet
+bun dep my-counter --category=basics --network=testnet
 ```
 
 ## 📋 Available Commands
 
-### `bun create [name] --category=[category]`
+### `bun new` [name] --category=[category] --template=[template]
 
 Creates a new Pinocchio program with all necessary boilerplate:
 
 ```bash
-# Create basic program (default category: basics)
-bun create my-counter
+# Create basic program using counter template (default)
+bun new my-counter
 
-# Create token program
-bun create token-vault --category=tokens
+# Create program using account-data template
+bun new my-program --template=account-data
+
+# Create token program with account-data template
+bun new token-vault --category=tokens --template=account-data
 
 # Create compression program
-bun create merkle-tree --category=compression
+bun new merkle-tree --category=compression
 
 # Create oracle program
-bun create price-feed --category=oracles
+bun new price-feed --category=oracles
 ```
 
-### `bun generate` (Smart Generation)
+#### Available Templates
 
-Automatically generates IDL and TypeScript client based on your current directory:
+- **`counter` (default)**: Basic counter program template with increment/decrement functionality
+- **`account-data`**: Account data management template with create/update operations
 
-**From program directory** (e.g., `cd basics/my-counter`):
+#### Template Usage Examples
+
 ```bash
-bun generate                    # Auto-detects program name
+# Using counter template (default)
+bun new my-counter                              # basics/my-counter
+bun new token-counter --category=tokens        # tokens/token-counter
+
+# Using account-data template
+bun new user-profile --template=account-data         # basics/user-profile
+bun new token-metadata --category=tokens --template=account-data  # tokens/token-metadata
 ```
 
-**From root directory or explicit**:
+### `bun gen` [program-name] --category=[category]
+
+Generates IDL and TypeScript client for the specified program:
+
 ```bash
-bun generate my-counter                    # Generate for basics/my-counter
-bun generate token-vault --category=tokens # Generate for tokens/token-vault
+# Generate for basics program
+bun gen my-counter --category=basics
+
+# Generate for tokens program
+bun gen token-vault --category=tokens
+
+# Auto-detection (shows available programs if none specified)
+bun gen
 ```
 
-### `bun deploy` (Smart Deployment)
+### `bun dep` [program-name] --category=[category] --network=[network]
 
-Automatically deploys your program based on current directory:
+Deploys your program to the specified network:
 
-**From program directory**:
 ```bash
-bun run deploy                      # Auto-detects program, deploys to devnet
-bun run deploy --network=testnet    # Auto-detects program, deploys to testnet
-bun run deploy --network=mainnet    # Auto-detects program, deploys to mainnet
-```
+# Deploy to devnet (default)
+bun dep my-counter --category=basics
 
-**From root directory or explicit**:
-```bash
-bun run deploy my-counter                          # Deploy basics/my-counter
-bun run deploy token-vault --category=tokens      # Deploy tokens/token-vault
-bun run deploy my-counter --network=mainnet       # Deploy to mainnet
+# Deploy to testnet
+bun dep my-counter --category=basics --network=testnet
+
+# Deploy to mainnet
+bun dep my-counter --category=basics --network=mainnet
+
+# Deploy tokens program
+bun dep token-vault --category=tokens
 ```
 
 ## 🏗️ What Gets Created
@@ -108,30 +128,63 @@ When you create a new program, the template system generates:
 
 ## 🎯 Template Features
 
+### Counter Template
+
 The counter template includes:
 
-### State Management
+#### State Management
 - `Counter` struct with proper bytemuck traits for zero-copy deserialization
 - Built-in safety methods (increment, decrement with overflow protection)
 - Authority-based access control
 
-### Instructions
+#### Instructions
 - Comprehensive Shank annotations for IDL generation
 - Multiple instruction variants (Initialize, Increment, Decrement, SetValue, Reset)
 - Proper account documentation
 
-### Error Handling
+#### Error Handling
 - Pinocchio error handling patterns
 - Input validation
 - Overflow/underflow protection
 
+### Account-Data Template
+
+The account-data template includes:
+
+#### State Management
+- `AddressInfo` struct for storing account metadata
+- Zero-copy deserialization with bytemuck traits
+- Flexible data storage patterns
+
+#### Instructions
+- `Create` instruction for initializing new accounts
+- Comprehensive account validation
+- Shank annotations for IDL generation
+
+#### Features
+- Account creation and management patterns
+- Proper account size calculations
+- Authority and ownership validation
+- Extensible for custom data structures
+
 ### Testing with Kite
 - Uses [Solana Kite](https://solanakite.org) for simplified testing
+- **Comprehensive Function Demonstrations**: Test templates demonstrate **all 17 core Kite functions**
+- **Educational Examples**: Each test serves as both functional testing and learning resource
 - **Helius RPC Integration**: Automatically uses high-performance Helius RPC endpoints
-- Automatic wallet creation and SOL airdropping
-- Streamlined transaction sending and confirmation
+- **Complete Coverage**: Wallet management, SOL operations, token lifecycle, transactions & utilities
 - Built on top of @solana/kit for modern Solana development
 - Enhanced network reliability and faster transaction confirmation
+
+#### Kite Functions Demonstrated
+Our test templates include working examples of:
+- **Wallet Management**: `createWallet()`, `createWallets()`, wallet loading
+- **SOL Operations**: `getLamportBalance()`, `airdropIfRequired()`, `transferLamports()`
+- **Token Lifecycle**: `createTokenMint()`, `mintTokens()`, `transferTokens()`, balance checking
+- **Transactions**: `sendTransactionFromInstructions()`, confirmation, logs, PDA generation
+- **Utilities**: Explorer links, account status checking, and more
+
+📚 **See [Kite Functions Guide](docs/KITE_FUNCTIONS.md) for complete documentation**
 
 ## 📁 Program Categories
 
@@ -144,10 +197,10 @@ Programs are organized into categories:
 
 ## 🔄 Development Workflow Examples
 
-### Option 1: Context-Aware Workflow (Recommended)
+### Option 1: Explicit Workflow (Recommended)
 ```bash
-# Create new program
-bun create token-staking --category=tokens
+# Create new program with account-data template
+bun new token-staking --category=tokens --template=account-data
 
 # Navigate to program directory
 cd tokens/token-staking
@@ -155,47 +208,42 @@ cd tokens/token-staking
 # Edit your code...
 # vim src/lib.rs
 
-# Generate IDL and client (auto-detects token-staking)
-bun generate
+# Generate IDL and client
+bun gen token-staking --category=tokens
 
-# Deploy to devnet (auto-detects token-staking)
-bun run deploy
+# Deploy to devnet
+bun dep token-staking --category=tokens
 
 # Test with generated client
 bun test
 
 # Deploy to mainnet when ready
-bun run deploy --network=mainnet
+bun dep token-staking --category=tokens --network=mainnet
 ```
 
-### Option 2: Explicit Commands
+### Option 2: From Root Directory
 ```bash
-# Create program
-bun create user-rewards
+# Create program with specific template
+bun new user-rewards --template=account-data
 
 # Generate from root directory
-bun generate user-rewards
+bun gen user-rewards --category=basics
 
 # Deploy from root directory
-bun run deploy user-rewards --network=testnet
+bun dep user-rewards --category=basics --network=testnet
 ```
 
-### Option 3: Multiple Programs
+### Option 3: Multiple Programs with Different Templates
 ```bash
-# Create multiple related programs
-bun create user-accounts
-bun create voting-system
-bun create reward-pool
+# Create multiple related programs with appropriate templates
+bun new user-accounts --template=account-data
+bun new voting-system --template=counter
+bun new reward-pool --template=account-data
 
 # Work on each one individually
-cd basics/user-accounts
-bun generate && bun run deploy
-
-cd ../voting-system
-bun generate && bun run deploy
-
-cd ../reward-pool
-bun generate && bun run deploy
+bun gen user-accounts --category=basics && bun dep user-accounts --category=basics
+bun gen voting-system --category=basics && bun dep voting-system --category=basics
+bun gen reward-pool --category=basics && bun dep reward-pool --category=basics
 ```
 
 ## 🛠️ Legacy Script Access
@@ -205,6 +253,9 @@ The original scripts are still available in the `scripts/` directory:
 ```bash
 # Create program (legacy)
 ./scripts/create-program.sh my-program
+
+# Create with specific template (legacy)
+./scripts/create-program.sh my-program --template=account-data --category=basics
 
 # Deploy program (legacy)
 ./scripts/deploy.sh my-program
@@ -263,14 +314,58 @@ templates/counter/
     └── README.md           # Program documentation
 ```
 
-## 🔧 Customizing Templates
+## 🔧 Creating Custom Templates
 
 To create new templates:
 
-1. Create a new directory in `templates/`
-2. Add the necessary Rust source files
-3. Use placeholder names (like "counter") that will be replaced
-4. Update the `create-program.sh` script to reference your template
+1. **Create Template Directory**: Add your template in `templates/` or use an existing program as a template
+2. **Add Rust Source Files**: Include all necessary `.rs` files with proper structure
+3. **Use Placeholder Names**: Use consistent naming (like "counter" or "account_data") that will be replaced
+4. **Update Script**: Add your template to the `create-program.sh` script validation section
+
+### Template Structure Requirements
+
+```
+your-template/
+├── Cargo.toml                 # Package configuration
+├── src/
+│   ├── lib.rs                # Main entry with declare_id!
+│   ├── entrypoint.rs         # Program entrypoint
+│   ├── processor.rs          # Instruction processing
+│   ├── constants.rs          # Program constants (optional)
+│   ├── instructions/
+│   │   └── mod.rs           # Instruction definitions
+│   └── state/
+│       └── mod.rs           # State definitions
+└── tests/
+    └── *.rs                 # Test files
+```
+
+### Adding New Templates
+
+To add a new template called `my-template`:
+
+1. Create the template structure in `templates/my-template/` or `basics/my-template/`
+2. Update `scripts/create-program.sh` validation section:
+
+```bash
+case $TEMPLATE_NAME in
+    counter)
+        TEMPLATE_DIR="templates/counter"
+        ;;
+    account-data)
+        TEMPLATE_DIR="basics/account-data"
+        ;;
+    my-template)  # Add this
+        TEMPLATE_DIR="templates/my-template"
+        ;;
+    *)
+        echo "Unknown template..."
+        ;;
+esac
+```
+
+3. Update the help text and documentation
 
 ## 🚨 Troubleshooting
 
@@ -301,9 +396,12 @@ If you see "Program already exists", either:
 Each command supports `--help` for detailed usage:
 
 ```bash
-bun create --help          # Create command help
-bun generate --help        # Generate command help  
-bun run deploy --help          # Deploy command help
+bun new --help             # Create command help with template options
+bun gen --help             # Generate command help  
+bun dep --help             # Deploy command help
+
+# See available templates
+./scripts/create-program.sh --help
 ```
 
 ## 📚 Integration with Existing Workflow

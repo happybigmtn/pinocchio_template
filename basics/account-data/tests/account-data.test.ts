@@ -32,10 +32,12 @@ function parsePaddedString(bytes: Uint8Array): string {
 test('basics:account-data:create', async () => {
   console.log('🧪 Testing account-data program infrastructure');
   
-  // Connect to Helius devnet
-  console.log('Connecting to helius-devnet...');
-  const kite = await connect('helius-devnet');
-  console.log('✅ Connected to Helius devnet successfully');
+  // Use standard Solana devnet RPC for testing (Helius may have restrictions)
+  console.log('Connecting to devnet...');
+  const rpcEndpoint = 'https://api.devnet.solana.com';
+  const wsEndpoint = 'wss://api.devnet.solana.com';
+  const kite = await connect(rpcEndpoint, wsEndpoint);
+  console.log('✅ Connected to devnet successfully');
   
   // Test basic RPC call
   const version = await kite.rpc.getVersion().send();
@@ -56,16 +58,15 @@ test('basics:account-data:create', async () => {
   
   console.log('');
   console.log('🎯 Test Summary:');
-  console.log('   ✅ Helius devnet connection working');
+  console.log('   ✅ Solana devnet connection working');
   console.log('   ✅ RPC calls successful');
   console.log('   ✅ TypeScript client compilation working');
   console.log('   ✅ Program ready for deployment');
   console.log('');
-  console.log('💡 Note: Helius free tier doesn\'t support airdrop operations.');
-  console.log('   For full integration tests, either:');
-  console.log('   - Upgrade to Helius paid plan');
-  console.log('   - Use manual wallet funding');
-  console.log('   - Deploy and test with funded wallet');
+  console.log('💡 Note: Using standard Solana devnet RPC for testing.');
+  console.log('   For production deployment, use Helius RPC from config.');
+  console.log('   For full integration tests with funding:');
+  console.log('   - Use solana airdrop command or manual wallet funding');
   
   // This test validates the infrastructure is working
   expect(version['solana-core']).toBeTruthy();

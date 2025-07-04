@@ -14,10 +14,16 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Get the current directory (use ORIGINAL_PWD if available, fallback to PWD)
+# When called from bun, the working directory changes to package root, so we need to preserve the original
 if [ -n "$ORIGINAL_PWD" ]; then
     CURRENT_DIR="$ORIGINAL_PWD"
 else
-    CURRENT_DIR="$PWD"
+    # Check if we have the original working directory from environment
+    if [ -n "$INIT_CWD" ]; then
+        CURRENT_DIR="$INIT_CWD"
+    else
+        CURRENT_DIR="$PWD"
+    fi
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
