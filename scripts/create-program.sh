@@ -74,10 +74,10 @@ validate_inputs() {
     # Set template directory based on template name
     case $TEMPLATE_NAME in
         counter)
-            TEMPLATE_DIR="basics/counter"
+            TEMPLATE_DIR="templates/account-data"  # Use account-data as base for counter template
             ;;
         account-data)
-            TEMPLATE_DIR="basics/account-data"
+            TEMPLATE_DIR="templates/account-data"
             ;;
         *)
             echo -e "${RED}Error: Unknown template '$TEMPLATE_NAME'. Available templates: counter, account-data${NC}"
@@ -225,18 +225,124 @@ create_test_files() {
     local program_name_dash=$(echo "$PROGRAM_NAME" | tr '_' '-')
     local program_name_snake=$(echo "$PROGRAM_NAME" | tr '-' '_')
     
-    # Delete existing test files from template
-    if [ -d "$target_dir/tests" ]; then
-        echo -e "${YELLOW}Removing existing test files...${NC}"
-        rm -rf "$target_dir/tests"/*
-    fi
-    
     # Create tests directory if it doesn't exist
     mkdir -p "$target_dir/tests"
     
-    # Create TypeScript test file with comprehensive Kite function demonstrations
-    # Using functions from Solana Kite: https://github.com/helius-labs/kite-og
-    cat > "$target_dir/tests/$program_name_dash.test.ts" << EOF
+    # Copy template test files if they exist - dynamically based on template
+    local template_test_dir="templates/$TEMPLATE_NAME/tests"
+    
+    # If the specific template doesn't have tests, fall back to account-data template
+    if [ ! -d "$template_test_dir" ]; then
+        echo -e "${YELLOW}Template $TEMPLATE_NAME doesn't have tests directory, using account-data template...${NC}"
+        template_test_dir="templates/account-data/tests"
+    fi
+    
+    if [ -d "$template_test_dir" ]; then
+        echo -e "${YELLOW}Copying template test files from $template_test_dir...${NC}"
+        
+        # Copy Mollusk test utilities
+        if [ -f "$template_test_dir/genericmollusk.rs" ]; then
+            cp "$template_test_dir/genericmollusk.rs" "$target_dir/tests/"
+            echo -e "${GREEN}✓ Copied Mollusk test utilities${NC}"
+        fi
+        
+        # Copy Kite test utilities  
+        if [ -f "$template_test_dir/generickite.ts" ]; then
+            cp "$template_test_dir/generickite.ts" "$target_dir/tests/"
+            echo -e "${GREEN}✓ Copied Kite test utilities${NC}"
+        fi
+        
+        # Copy test template README
+        if [ -f "$template_test_dir/TEST_TEMPLATE_README.md" ]; then
+            cp "$template_test_dir/TEST_TEMPLATE_README.md" "$target_dir/tests/"
+            echo -e "${GREEN}✓ Copied test documentation${NC}"
+        fi
+        
+        # Copy program-specific Rust test as a template
+        # Look for any .rs file that matches the template name pattern
+        local template_rust_test=""
+        case $TEMPLATE_NAME in
+            counter)
+                # For counter template, look for counter.rs or account_data.rs as fallback
+                if [ -f "$template_test_dir/counter.rs" ]; then
+                    template_rust_test="$template_test_dir/counter.rs"
+                elif [ -f "$template_test_dir/account_data.rs" ]; then
+                    template_rust_test="$template_test_dir/account_data.rs"
+                fi
+                ;;
+            account-data)
+                if [ -f "$template_test_dir/account_data.rs" ]; then
+                    template_rust_test="$template_test_dir/account_data.rs"
+                fi
+                ;;
+            *)
+                # For other templates, look for a .rs file that matches the template name
+                local template_name_snake=$(echo "$TEMPLATE_NAME" | tr '-' '_')
+                if [ -f "$template_test_dir/${template_name_snake}.rs" ]; then
+                    template_rust_test="$template_test_dir/${template_name_snake}.rs"
+                elif [ -f "$template_test_dir/account_data.rs" ]; then
+                    template_rust_test="$template_test_dir/account_data.rs"
+                fi
+                ;;
+        esac
+        
+        if [ -n "$template_rust_test" ] && [ -f "$template_rust_test" ]; then
+            cp "$template_rust_test" "$target_dir/tests/$program_name_snake.rs"
+            # Update the copied Rust test file with the new program name
+            sed -i "s/account_data/$program_name_snake/g" "$target_dir/tests/$program_name_snake.rs"
+            sed -i "s/account-data/$program_name_dash/g" "$target_dir/tests/$program_name_snake.rs"
+            # Also replace counter references if copying from counter template
+            sed -i "s/counter/$program_name_snake/g" "$target_dir/tests/$program_name_snake.rs"
+            echo -e "${GREEN}✓ Created Rust test template from $(basename "$template_rust_test")${NC}"
+        else
+            echo -e "${YELLOW}⚠ No suitable Rust test template found, creating basic test file${NC}"
+        fi
+        
+        # Copy TypeScript test if it exists
+        local template_ts_test=""
+        case $TEMPLATE_NAME in
+            counter)
+                if [ -f "$template_test_dir/counter.test.ts" ]; then
+                    template_ts_test="$template_test_dir/counter.test.ts"
+                elif [ -f "$template_test_dir/account-data.test.ts" ]; then
+                    template_ts_test="$template_test_dir/account-data.test.ts"
+                fi
+                ;;
+            account-data)
+                if [ -f "$template_test_dir/account-data.test.ts" ]; then
+                    template_ts_test="$template_test_dir/account-data.test.ts"
+                fi
+                ;;
+            *)
+                local template_name_dash_file="$template_test_dir/${TEMPLATE_NAME}.test.ts"
+                if [ -f "$template_name_dash_file" ]; then
+                    template_ts_test="$template_name_dash_file"
+                elif [ -f "$template_test_dir/account-data.test.ts" ]; then
+                    template_ts_test="$template_test_dir/account-data.test.ts"
+                fi
+                ;;
+        esac
+        
+        if [ -n "$template_ts_test" ] && [ -f "$template_ts_test" ]; then
+            # Copy and customize the TypeScript test
+            cp "$template_ts_test" "$target_dir/tests/$program_name_dash.test.ts"
+            # Update references in the TypeScript test
+            sed -i "s/account-data/$program_name_dash/g" "$target_dir/tests/$program_name_dash.test.ts"
+            sed -i "s/account_data/$program_name_snake/g" "$target_dir/tests/$program_name_dash.test.ts"
+            sed -i "s/counter/$program_name_snake/g" "$target_dir/tests/$program_name_dash.test.ts"
+            echo -e "${GREEN}✓ Created TypeScript test from $(basename "$template_ts_test")${NC}"
+        else
+            echo -e "${YELLOW}⚠ No TypeScript test template found, will create comprehensive Kite test below${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⚠ No test templates found, creating basic test files${NC}"
+    fi
+    
+    # Create TypeScript test file with comprehensive Kite function demonstrations if not already created above
+    if [ ! -f "$target_dir/tests/$program_name_dash.test.ts" ]; then
+        echo -e "${YELLOW}Creating comprehensive Kite test file...${NC}"
+        # Using functions from Solana Kite: https://github.com/helius-labs/kite-og
+        cat > "$target_dir/tests/$program_name_dash.test.ts" << EOF
 import { describe, test, beforeAll } from 'bun:test';
 import { connect } from 'solana-kite';
 import { address, lamports } from '@solana/kit';
@@ -532,6 +638,9 @@ describe('${PROGRAM_NAME} - Comprehensive Kite Demo', () => {
   }, { timeout: 60000 });
 });
 EOF
+    else
+        echo -e "${GREEN}✓ TypeScript test already created from template${NC}"
+    fi
     
     echo -e "${GREEN}✓ Test files created with proper Kite functions${NC}"
 }
