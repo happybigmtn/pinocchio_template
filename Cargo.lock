@@ -632,22 +632,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cross-program-invocation"
-version = "0.1.0"
-dependencies = [
- "bytemuck",
- "mollusk-svm",
- "pinocchio",
- "pinocchio-helper",
- "pinocchio-log",
- "pinocchio-pubkey",
- "pinocchio-system",
- "shank",
- "solana-program-runtime",
- "solana-sdk",
-]
-
-[[package]]
 name = "crossbeam-channel"
 version = "0.5.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"

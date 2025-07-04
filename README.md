@@ -119,12 +119,16 @@ When you create a new program, the template system generates:
 
 ### Test Files
 - `tests/[program-name].test.ts` - TypeScript test template using Solana Kite framework
+- `tests/[program-name].rs` - Rust test template using Mollusk SVM framework
+- `tests/generic*.rs` - Additional Mollusk test utilities and templates
 
 ### Build Scripts
 - Updates root `package.json` with program-specific scripts:
   - `gen:idl:[program-name]` - Generate IDL using Shank
   - `gen:client:[program-name]` - Generate TypeScript client
-  - `test:client:[program-name]` - Run tests
+  - `test:client:[program-name]` - Run TypeScript tests with Kite
+- Cargo.toml includes Mollusk dependencies for Rust testing
+- Both test frameworks can be run independently or together
 
 ## 🎯 Template Features
 
@@ -167,12 +171,24 @@ The account-data template includes:
 - Authority and ownership validation
 - Extensible for custom data structures
 
-### Testing with Kite
-- Uses [Solana Kite](https://solanakite.org) for simplified testing
+### Testing with Multiple Frameworks
+
+#### TypeScript Testing with Kite
+- Uses [Solana Kite](https://solanakite.org) for simplified TypeScript testing
 - **Comprehensive Function Demonstrations**: Test templates demonstrate **all 17 core Kite functions**
 - **Educational Examples**: Each test serves as both functional testing and learning resource
 - **Helius RPC Integration**: Automatically uses high-performance Helius RPC endpoints
 - **Complete Coverage**: Wallet management, SOL operations, token lifecycle, transactions & utilities
+- Built on top of @solana/kit for modern Solana development
+- Enhanced network reliability and faster transaction confirmation
+
+#### Rust Testing with Mollusk
+- Uses [Mollusk SVM](https://github.com/buffalojoec/mollusk) for high-performance Rust testing
+- **Direct SVM Testing**: Tests run against the Solana Virtual Machine directly
+- **Fast Execution**: No RPC calls needed, tests execute locally
+- **Comprehensive Utilities**: Account creation, instruction building, assertion helpers
+- **Cross-Program Invocation**: Support for testing CPI patterns
+- **Performance Monitoring**: Compute unit tracking and resource usage validation
 - Built on top of @solana/kit for modern Solana development
 - Enhanced network reliability and faster transaction confirmation
 
@@ -184,7 +200,8 @@ Our test templates include working examples of:
 - **Transactions**: `sendTransactionFromInstructions()`, confirmation, logs, PDA generation
 - **Utilities**: Explorer links, account status checking, and more
 
-📚 **See [Kite Functions Guide](docs/KITE_FUNCTIONS.md) for complete documentation**
+📚 **See [Kite Functions Guide](docs/KITE_FUNCTIONS.md) for complete TypeScript testing documentation**
+📚 **See [Mollusk Test Template Guide](templates/account-data/tests/TEST_TEMPLATE_README.md) for complete Rust testing documentation**
 
 ## 📁 Program Categories
 
@@ -214,8 +231,11 @@ bun gen token-staking --category=tokens
 # Deploy to devnet
 bun dep token-staking --category=tokens
 
-# Test with generated client
+# Test with TypeScript/Kite framework
 bun test
+
+# Or test with Rust/Mollusk framework
+cd basics/token-staking && cargo test
 
 # Deploy to mainnet when ready
 bun dep token-staking --category=tokens --network=mainnet

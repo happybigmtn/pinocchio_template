@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     // Environment setup & latest features
-    "lib": ["esnext"],
-    "target": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "target": "ES2020",
     "module": "ESNext",
     "moduleDetection": "force",
     "jsx": "react-jsx",
@@ -17,6 +17,7 @@
     // Best practices
     "strict": true,
     "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
 
@@ -29,6 +30,10 @@
       "@test/*": ["./test-on-devnet/*"],
       "@clients/*": ["./clients/*"]
     }
-  }
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
 
