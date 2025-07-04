@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use counter_template::{
+    use counter2_template::{
         state::{AddressInfo, CreateAddressInfoInstructionData},
         ID,
     };
@@ -19,8 +19,8 @@ mod tests {
     pub const PROGRAM_ID: Pubkey = Pubkey::new_from_array(ID);
 
     #[test]
-    fn test_create_counter() {
-        let mollusk = Mollusk::new(&PROGRAM_ID, "../../target/deploy/counter_template");
+    fn test_create_counter2() {
+        let mollusk = Mollusk::new(&PROGRAM_ID, "../../target/deploy/counter2_template");
 
         let (system_program, system_account) =
             mollusk_svm::program::keyed_account_for_system_program();

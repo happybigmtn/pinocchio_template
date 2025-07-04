@@ -123,24 +123,20 @@ update_cargo_toml() {
     local target_dir="$CATEGORY/$PROGRAM_NAME"
     local program_name_snake=$(echo "$PROGRAM_NAME" | tr '-' '_')
     
-    # Determine the original template name to replace in Cargo.toml
-    local template_cargo_name
-    case $TEMPLATE_NAME in
-        counter)
-            template_cargo_name="counter"
-            ;;
-        account-data)
-            template_cargo_name="account-data"
-            ;;
-        *)
-            template_cargo_name="counter"  # fallback
-            ;;
-    esac
-    
-    # Update program Cargo.toml
+    # Update program Cargo.toml - replace any template name patterns with the new program name
     if [ -f "$target_dir/Cargo.toml" ]; then
-        sed -i "s/name = \"$template_cargo_name\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
-        sed -i "s/name = \"${template_cargo_name}_\"/name = \"${program_name_snake}_\"/g" "$target_dir/Cargo.toml"
+        # Replace common template name patterns
+        sed -i "s/name = \"account-data-template\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
+        sed -i "s/name = \"counter-template\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
+        sed -i "s/name = \"account-data\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
+        sed -i "s/name = \"counter\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
+        
+        # Replace with snake_case version if needed
+        sed -i "s/name = \"account_data_template\"/name = \"$program_name_snake\"/g" "$target_dir/Cargo.toml"
+        sed -i "s/name = \"counter_template\"/name = \"$program_name_snake\"/g" "$target_dir/Cargo.toml"
+        sed -i "s/name = \"account_data\"/name = \"$program_name_snake\"/g" "$target_dir/Cargo.toml"
+        
+        echo -e "${GREEN}✓ Updated Cargo.toml package name to $PROGRAM_NAME${NC}"
     fi
     
     # Update workspace Cargo.toml
