@@ -1,13 +1,12 @@
-#![no_std]
-#![allow(unexpected_cfgs)]
+use pinocchio::pinocchio_pubkey;
+use pinocchio_pubkey::declare_id;
 
-pub mod constants;
-#[cfg(feature = "idl")]
+declare_id!("11111111111111111111111111111111");
+
+mod entrypoint;
+mod processor;
+
 pub mod instructions;
-pub mod processor;
 pub mod state;
 
-#[cfg(not(feature = "no-entrypoint"))]
-pub mod entrypoint;
-
-pinocchio_pubkey::declare_id!("11111111111111111111111111111111");
+pub use processor::process_instruction;

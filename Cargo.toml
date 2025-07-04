@@ -3,9 +3,7 @@ resolver = "2"
 members = [
   "basics/*", 
   "pinocchio-helper",
-  # "compression/*",
-  # "oracles/*",
-  # "tokens/*",
+  "tokens/*",
 ]
 
 [workspace.package]

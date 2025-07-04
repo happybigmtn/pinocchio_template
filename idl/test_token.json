@@ -1,0 +1,96 @@
+{
+  "version": "0.1.0",
+  "name": "test_token",
+  "instructions": [
+    {
+      "name": "Initialize",
+      "accounts": [
+        {
+          "name": "testToken",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The test_token account to initialize"
+          ]
+        },
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The account paying for initialization"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "The system program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    },
+    {
+      "name": "Increment",
+      "accounts": [
+        {
+          "name": "testToken",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The test_token account to increment"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The test_token authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 1
+      }
+    },
+    {
+      "name": "Decrement",
+      "accounts": [
+        {
+          "name": "testToken",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The test_token account to decrement"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The test_token authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 2
+      }
+    }
+  ],
+  "metadata": {
+    "origin": "shank",
+    "address": "11111111111111111111111111111111"
+  }
+}
