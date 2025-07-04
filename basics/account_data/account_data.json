@@ -1,0 +1,101 @@
+{
+  "version": "0.1.0",
+  "name": "account_data",
+  "instructions": [
+    {
+      "name": "Create",
+      "accounts": [],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AddressInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "houseNumber",
+            "type": "u8"
+          },
+          {
+            "name": "street",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "city",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "CreateAddressInfoInstructionData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "houseNumber",
+            "type": "u8"
+          },
+          {
+            "name": "street",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "city",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "origin": "shank",
+    "address": "EAUvJAw61MTaJbyV4tqFB4dEZuYHdYrtpGQ35hDsQ6Dw"
+  }
+}
