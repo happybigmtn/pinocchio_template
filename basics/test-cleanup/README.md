@@ -1,4 +1,4 @@
-# Counter2
+# Test Cleanup
 
 A Solana program built with Pinocchio.
 
@@ -11,37 +11,37 @@ TODO: Add description of what this program does.
 ### Building
 
 ```bash
-cargo build-sbf --manifest-path basics/counter2/Cargo.toml
+cargo build-sbf --manifest-path basics/test-cleanup/Cargo.toml
 ```
 
 ### Deployment
 
 ```bash
 # Deploy to devnet
-./deploy.sh counter2
+./deploy.sh test-cleanup
 
 # Deploy to testnet
-./deploy.sh counter2 --network=testnet
+./deploy.sh test-cleanup --network=testnet
 
 # Deploy to mainnet
-./deploy.sh counter2 --network=mainnet
+./deploy.sh test-cleanup --network=mainnet
 ```
 
 ### Generate Client
 
 ```bash
 # Generate IDL
-npm run gen:idl:counter2
+npm run gen:idl:test-cleanup
 
 # Generate TypeScript client
-npm run gen:client:counter2
+npm run gen:client:test-cleanup
 ```
 
 ### Testing
 
 ```bash
 # Run tests
-npm run test:client:counter2
+npm run test:client:test-cleanup
 ```
 
 ## Program Structure
@@ -56,9 +56,9 @@ npm run test:client:counter2
 ## Development
 
 1. Modify the Rust source code in `src/`
-2. Build and deploy: `./deploy.sh counter2`
-3. Generate client: `npm run gen:client:counter2`
-4. Run tests: `npm run test:client:counter2`
+2. Build and deploy: `./deploy.sh test-cleanup`
+3. Generate client: `npm run gen:client:test-cleanup`
+4. Run tests: `npm run test:client:test-cleanup`
 
 ## Notes
 

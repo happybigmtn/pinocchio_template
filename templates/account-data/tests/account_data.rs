@@ -26,7 +26,7 @@ mod tests {
             mollusk_svm::program::keyed_account_for_system_program();
 
         let owner = Pubkey::new_from_array([0x02; 32]);
-        let owner_account = AccountSharedData::new(1 * LAMPORTS_PER_SOL, 0, &system_program);
+        let owner_account = AccountSharedData::new(LAMPORTS_PER_SOL, 0, &system_program);
 
         let address_info_pubkey = Pubkey::new_unique();
         let address_info_account = AccountSharedData::new(0, 0, &system_program);

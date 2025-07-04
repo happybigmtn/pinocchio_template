@@ -290,6 +290,12 @@ create_test_files() {
             # Also replace counter references if copying from counter template
             sed -i "s/counter/$program_name_snake/g" "$target_dir/tests/$program_name_snake.rs"
             echo -e "${GREEN}✓ Created Rust test template from $(basename "$template_rust_test")${NC}"
+            
+            # Remove the original template file to avoid duplicates (unless it's the same file)
+            if [ "$(basename "$template_rust_test")" != "$program_name_snake.rs" ]; then
+                rm -f "$target_dir/tests/$(basename "$template_rust_test")"
+                echo -e "${GREEN}✓ Removed duplicate template file $(basename "$template_rust_test")${NC}"
+            fi
         else
             echo -e "${YELLOW}⚠ No suitable Rust test template found, creating basic test file${NC}"
         fi
@@ -327,6 +333,12 @@ create_test_files() {
             sed -i "s/account_data/$program_name_snake/g" "$target_dir/tests/$program_name_dash.test.ts"
             sed -i "s/counter/$program_name_snake/g" "$target_dir/tests/$program_name_dash.test.ts"
             echo -e "${GREEN}✓ Created TypeScript test from $(basename "$template_ts_test")${NC}"
+            
+            # Remove the original template file to avoid duplicates (unless it's the same file)
+            if [ "$(basename "$template_ts_test")" != "$program_name_dash.test.ts" ]; then
+                rm -f "$target_dir/tests/$(basename "$template_ts_test")"
+                echo -e "${GREEN}✓ Removed duplicate template file $(basename "$template_ts_test")${NC}"
+            fi
         else
             echo -e "${YELLOW}⚠ No TypeScript test template found, will create comprehensive Kite test below${NC}"
         fi

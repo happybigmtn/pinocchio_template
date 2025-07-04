@@ -83,7 +83,7 @@ impl<'info> TryFrom<&'info [u8]> for CreateAddressInfoInstructionData {
     type Error = ProgramError;
 
     fn try_from(data: &'info [u8]) -> Result<Self, Self::Error> {
-        let result = bytemuck::try_from_bytes::<Self>(&data)
+        let result = bytemuck::try_from_bytes::<Self>(data)
             .map_err(|_| ProgramError::InvalidInstructionData)?;
 
         Ok(*result)

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use counter2_template::{
+    use test_cleanup_template::{
         state::{AddressInfo, CreateAddressInfoInstructionData},
         ID,
     };
@@ -19,14 +19,14 @@ mod tests {
     pub const PROGRAM_ID: Pubkey = Pubkey::new_from_array(ID);
 
     #[test]
-    fn test_create_counter2() {
-        let mollusk = Mollusk::new(&PROGRAM_ID, "../../target/deploy/counter2_template");
+    fn test_create_test_cleanup() {
+        let mollusk = Mollusk::new(&PROGRAM_ID, "../../target/deploy/test_cleanup_template");
 
         let (system_program, system_account) =
             mollusk_svm::program::keyed_account_for_system_program();
 
         let owner = Pubkey::new_from_array([0x02; 32]);
-        let owner_account = AccountSharedData::new(1 * LAMPORTS_PER_SOL, 0, &system_program);
+        let owner_account = AccountSharedData::new(LAMPORTS_PER_SOL, 0, &system_program);
 
         let address_info_pubkey = Pubkey::new_unique();
         let address_info_account = AccountSharedData::new(0, 0, &system_program);

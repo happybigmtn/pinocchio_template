@@ -29,8 +29,8 @@ function parsePaddedString(bytes: Uint8Array): string {
   return new TextDecoder().decode(actualBytes);
 }
 
-test('basics:account-data:create', async () => {
-  console.log('🧪 Testing account-data program infrastructure');
+test('basics:test-cleanup:create', async () => {
+  console.log('🧪 Testing test-cleanup program infrastructure');
   
   // Use standard Solana devnet RPC for testing (Helius may have restrictions)
   console.log('Connecting to devnet...');
@@ -49,7 +49,7 @@ test('basics:account-data:create', async () => {
   
   // Check that program binary exists
   const fs = require('fs');
-  const programBinary = '../../target/deploy/account_data.so';
+  const programBinary = '../../target/deploy/test_cleanup.so';
   if (fs.existsSync(programBinary)) {
     console.log('✅ Program binary exists and is ready for deployment');
   } else {

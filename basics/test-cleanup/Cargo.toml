@@ -1,5 +1,5 @@
 [package]
-name = "counter2"
+name = "test-cleanup"
 version = "0.1.0"
 edition = "2021"
 license.workspace = true

@@ -11,7 +11,7 @@ pub fn process_instruction(
     accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
-    if _program_id.as_ref() != &crate::ID {
+    if _program_id.as_ref() != crate::ID {
         return Err(ProgramError::IncorrectProgramId);
     }
 

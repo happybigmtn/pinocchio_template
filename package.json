@@ -15,7 +15,10 @@
     "gen:idl:counter2": "shank idl --crate-root basics/counter2 --out-dir idl",
     "gen:client:test-program": "node scripts/generate-clients.js test-program",
     "test:client:test-program": "bun test --testFiles basics/test-program/tests/test-program.test.ts",
-    "gen:idl:test-program": "shank idl --crate-root basics/test_program --out-dir idl"
+    "gen:idl:test-program": "shank idl --crate-root basics/test_program --out-dir idl",
+    "gen:client:test-cleanup": "node scripts/generate-clients.js test-cleanup",
+    "test:client:test-cleanup": "bun test --testFiles basics/test-cleanup/tests/test-cleanup.test.ts",
+    "gen:idl:test-cleanup": "shank idl --crate-root basics/test_cleanup --out-dir idl"
   },
   "devDependencies": {
     "@codama/nodes-from-anchor": "^1.2.1",
