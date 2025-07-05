@@ -15,7 +15,7 @@ import {
 import { type ParsedCreateInstruction } from '../instructions';
 
 export const COUNTER_PROGRAM_ADDRESS =
-  'Fruv5QjqNDXvvYT2hw4FjhsT5aa11bHAPtMQH46mg3SS' as Address<'Fruv5QjqNDXvvYT2hw4FjhsT5aa11bHAPtMQH46mg3SS'>;
+  '8mqZdKKFP1rLWGJk8BtwV88t5YHHfF8v5rQbL9cEqrQx' as Address<'8mqZdKKFP1rLWGJk8BtwV88t5YHHfF8v5rQbL9cEqrQx'>;
 
 export enum CounterAccount {
   AddressInfo,
@@ -38,7 +38,7 @@ export function identifyCounterInstruction(
 }
 
 export type ParsedCounterInstruction<
-  TProgram extends string = 'Fruv5QjqNDXvvYT2hw4FjhsT5aa11bHAPtMQH46mg3SS',
+  TProgram extends string = '8mqZdKKFP1rLWGJk8BtwV88t5YHHfF8v5rQbL9cEqrQx',
 > = {
   instructionType: CounterInstruction.Create;
 } & ParsedCreateInstruction<TProgram>;

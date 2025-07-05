@@ -10,15 +10,9 @@
     "gen:client:counter": "node scripts/generate-clients.js counter",
     "test:client:counter": "bun test --testFiles basics/counter/tests/counter.test.ts",
     "gen:idl:counter": "shank idl --crate-root basics/counter --out-dir idl",
-    "gen:client:counter2": "node scripts/generate-clients.js counter2",
-    "test:client:counter2": "bun test --testFiles basics/counter2/tests/counter2.test.ts",
-    "gen:idl:counter2": "shank idl --crate-root basics/counter2 --out-dir idl",
-    "gen:client:test-program": "node scripts/generate-clients.js test-program",
-    "test:client:test-program": "bun test --testFiles basics/test-program/tests/test-program.test.ts",
-    "gen:idl:test-program": "shank idl --crate-root basics/test_program --out-dir idl",
-    "gen:client:test-cleanup": "node scripts/generate-clients.js test-cleanup",
-    "test:client:test-cleanup": "bun test --testFiles basics/test-cleanup/tests/test-cleanup.test.ts",
-    "gen:idl:test-cleanup": "shank idl --crate-root basics/test_cleanup --out-dir idl"
+    "gen:client:account-data": "node scripts/generate-clients.js account-data",
+    "test:client:account-data": "bun test --testFiles basics/account-data/tests/account-data.test.ts",
+    "gen:idl:account-data": "shank idl --crate-root basics/account_data --out-dir idl"
   },
   "devDependencies": {
     "@codama/nodes-from-anchor": "^1.2.1",

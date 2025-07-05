@@ -199,6 +199,7 @@ update_rust_source() {
     find "$target_dir/tests" -name "*.rs" -exec sed -i "s/$template_name_snake/$program_name_snake/g" {} \; 2>/dev/null || true
     find "$target_dir/tests" -name "*.rs" -exec sed -i "s/$template_name_upper/$program_name_upper/g" {} \; 2>/dev/null || true
     
+    
     echo -e "${GREEN}✓ Rust source files updated${NC}"
 }
 
@@ -651,6 +652,37 @@ EOF
     fi
     
     echo -e "${GREEN}✓ Test files created with proper Kite functions${NC}"
+    
+    # COMPREHENSIVE TEMPLATE NAME REPLACEMENT
+    # Apply replacements in multiple passes to ensure all patterns are caught
+    echo "  Applying comprehensive template name replacements to test files..."
+    
+    # Pass 1: Replace common template crate names in all text contexts
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.md" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.md" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    
+    # Pass 2: Replace specific binary path patterns in mollusk tests
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"../../target/deploy/account_data_template\"|\"../../target/deploy/$program_name_snake\"|g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"../../target/deploy/counter_template\"|\"../../target/deploy/$program_name_snake\"|g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"account_data_template\"|\"$program_name_snake\"|g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"counter_template\"|\"$program_name_snake\"|g" {} \; 2>/dev/null || true
+    
+    # Pass 3: Generic replacement for any remaining *_template patterns in use statements
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/use [a-z_]*_template::/use $program_name_snake::/g" {} \; 2>/dev/null || true
+    
+    # Pass 4: Final comprehensive pass to catch any remaining template references
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.md" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.md" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    
+    # Pass 5: Prevent duplication by fixing any accidental double-template patterns
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/${program_name_snake}_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"../../target/deploy/${program_name_snake}_template\"|\"../../target/deploy/$program_name_snake\"|g" {} \; 2>/dev/null || true
+    
+    echo "  ✓ Template name replacements completed"
 }
 
 # Create deployment configuration

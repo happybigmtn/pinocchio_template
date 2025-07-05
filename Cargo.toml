@@ -16,6 +16,12 @@ members = [
   "basics/*",
   "basics/*",
   "basics/*",
+  "basics/*",
+  "basics/*",
+  "basics/*",
+  "basics/*",
+  "basics/*",
+  "basics/*",
 ]
 
 [workspace.package]
