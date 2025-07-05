@@ -74,7 +74,7 @@ validate_inputs() {
     # Set template directory based on template name
     case $TEMPLATE_NAME in
         counter)
-            TEMPLATE_DIR="templates/account-data"  # Use account-data as base for counter template
+            TEMPLATE_DIR="templates/counter"
             ;;
         account-data)
             TEMPLATE_DIR="templates/account-data"
