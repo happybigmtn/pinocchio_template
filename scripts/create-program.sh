@@ -20,6 +20,8 @@ NC='\033[0m' # No Color
 
 # Help function
 show_help() {
+    local available_templates=$(get_available_templates)
+    
     echo "Usage: $0 [program_name] [--category=basics|tokens|compression|oracles] [--template=template_name]"
     echo ""
     echo "Creates a new Pinocchio program from template"
@@ -32,12 +34,27 @@ show_help() {
     echo "Examples:"
     echo "  $0 my_program                              # Create basics/my_program from counter template"
     echo "  $0 token_mint --category=tokens            # Create tokens/token_mint from counter template"
-    echo "  $0 my_counter --template=account-data      # Create basics/my_counter from account-data template"
-    echo "  $0 my_program --category=tokens --template=account-data  # Create tokens/my_program from account-data template"
+    if [ -n "$available_templates" ]; then
+        local first_template=$(echo $available_templates | cut -d' ' -f1)
+        local second_template=$(echo $available_templates | cut -d' ' -f2)
+        if [ -n "$second_template" ]; then
+            echo "  $0 my_counter --template=$second_template      # Create basics/my_counter from $second_template template"
+            echo "  $0 my_program --category=tokens --template=$second_template  # Create tokens/my_program from $second_template template"
+        fi
+    fi
     echo ""
-    echo "Available templates:"
-    echo "  - counter (default): Basic counter program template"
-    echo "  - account-data: Account data management template"
+    if [ -n "$available_templates" ]; then
+        echo "Available templates:"
+        for template in $available_templates; do
+            if [ "$template" = "counter" ]; then
+                echo "  - $template (default)"
+            else
+                echo "  - $template"
+            fi
+        done
+    else
+        echo "No templates found in templates/ directory"
+    fi
     echo ""
     echo "The script will:"
     echo "  1. Create program directory with Rust source code"
@@ -45,6 +62,17 @@ show_help() {
     echo "  3. Generate package.json scripts"
     echo "  4. Create test files"
     echo "  5. Set up deployment configuration"
+}
+
+# Get available templates dynamically
+get_available_templates() {
+    if [ ! -d "templates" ]; then
+        echo ""
+        return
+    fi
+    
+    # Find all directories in templates/ and return them as a space-separated list
+    find templates -maxdepth 1 -type d -not -path templates | sed 's|templates/||' | sort | tr '\n' ' '
 }
 
 # Validate inputs
@@ -71,29 +99,26 @@ validate_inputs() {
             ;;
     esac
 
-    # Set template directory based on template name
-    case $TEMPLATE_NAME in
-        counter)
-            TEMPLATE_DIR="templates/counter"
-            ;;
-        account-data)
-            TEMPLATE_DIR="templates/account-data"
-            ;;
-        *)
-            echo -e "${RED}Error: Unknown template '$TEMPLATE_NAME'. Available templates: counter, account-data${NC}"
-            exit 1
-            ;;
-    esac
+    # Set template directory based on template name (dynamic discovery)
+    TEMPLATE_DIR="templates/$TEMPLATE_NAME"
+    
+    # Get available templates for error messages
+    local available_templates=$(get_available_templates)
+    
+    # Check if template exists
+    if [ ! -d "$TEMPLATE_DIR" ]; then
+        if [ -z "$available_templates" ]; then
+            echo -e "${RED}Error: No templates found in templates/ directory${NC}"
+        else
+            echo -e "${RED}Error: Unknown template '$TEMPLATE_NAME'.${NC}"
+            echo -e "${YELLOW}Available templates: $available_templates${NC}"
+        fi
+        exit 1
+    fi
 
     # Check if program already exists
     if [ -d "$CATEGORY/$PROGRAM_NAME" ]; then
         echo -e "${RED}Error: Program $CATEGORY/$PROGRAM_NAME already exists${NC}"
-        exit 1
-    fi
-
-    # Check if template exists
-    if [ ! -d "$TEMPLATE_DIR" ]; then
-        echo -e "${RED}Error: Template directory $TEMPLATE_DIR does not exist${NC}"
         exit 1
     fi
 }
@@ -126,20 +151,18 @@ update_cargo_toml() {
     local target_dir="$CATEGORY/$PROGRAM_NAME"
     local program_name_snake=$(echo "$PROGRAM_NAME" | tr '-' '_')
     
-    # Update program Cargo.toml - replace any template name patterns with the new program name
+    # Update program Cargo.toml - replace template name with new program name
     if [ -f "$target_dir/Cargo.toml" ]; then
-        # Replace common template name patterns
-        sed -i "s/name = \"account-data-template\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
-        sed -i "s/name = \"counter-template\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
-        sed -i "s/name = \"account-data\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
-        sed -i "s/name = \"counter\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
+        # Get the current name from Cargo.toml
+        local current_name=$(grep '^name = ' "$target_dir/Cargo.toml" | head -1 | sed 's/name = "\(.*\)"/\1/')
         
-        # Replace with snake_case version if needed
-        sed -i "s/name = \"account_data_template\"/name = \"$program_name_snake\"/g" "$target_dir/Cargo.toml"
-        sed -i "s/name = \"counter_template\"/name = \"$program_name_snake\"/g" "$target_dir/Cargo.toml"
-        sed -i "s/name = \"account_data\"/name = \"$program_name_snake\"/g" "$target_dir/Cargo.toml"
-        
-        echo -e "${GREEN}✓ Updated Cargo.toml package name to $PROGRAM_NAME${NC}"
+        if [ -n "$current_name" ]; then
+            # Replace the current name with the new program name
+            sed -i "s/name = \"$current_name\"/name = \"$PROGRAM_NAME\"/g" "$target_dir/Cargo.toml"
+            echo -e "${GREEN}✓ Updated Cargo.toml package name from '$current_name' to '$PROGRAM_NAME'${NC}"
+        else
+            echo -e "${YELLOW}⚠ Could not find package name in Cargo.toml${NC}"
+        fi
     fi
     
     # Update workspace Cargo.toml
@@ -171,20 +194,8 @@ update_rust_source() {
     # Generate a new program ID placeholder
     local new_program_id="11111111111111111111111111111111"
     
-    # Determine the original template name to replace
-    local template_name_snake
-    case $TEMPLATE_NAME in
-        counter)
-            template_name_snake="counter"
-            ;;
-        account-data)
-            template_name_snake="account_data"
-            ;;
-        *)
-            template_name_snake="counter"  # fallback
-            ;;
-    esac
-    
+    # Determine the original template name to replace (dynamic based on actual template)
+    local template_name_snake=$(echo "$TEMPLATE_NAME" | tr '-' '_')
     local template_name_upper=$(echo "$template_name_snake" | tr '[:lower:]' '[:upper:]')
     
     # Update lib.rs
@@ -202,17 +213,16 @@ update_rust_source() {
     find "$target_dir/tests" -name "*.rs" -exec sed -i "s/$template_name_snake/$program_name_snake/g" {} \; 2>/dev/null || true
     find "$target_dir/tests" -name "*.rs" -exec sed -i "s/$template_name_upper/$program_name_upper/g" {} \; 2>/dev/null || true
     
-    # Update template crate names in all test files
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/counter-template/$program_name_dash/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/account-data-template/$program_name_dash/g" {} \; 2>/dev/null || true
+    # Update template crate names in all test files (generic replacement based on current template)
+    local template_name_dash=$(echo "$TEMPLATE_NAME" | tr '_' '-')
+    
+    # Replace template name variations in test files
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/${template_name_snake}_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/${template_name_dash}-template/$program_name_dash/g" {} \; 2>/dev/null || true
     
     # Update TypeScript files
-    find "$target_dir/tests" -name "*.ts" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.ts" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.ts" -exec sed -i "s/counter-template/$program_name_dash/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.ts" -exec sed -i "s/account-data-template/$program_name_dash/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.ts" -exec sed -i "s/${template_name_snake}_template/$program_name_snake/g" {} \; 2>/dev/null || true
+    find "$target_dir/tests" -name "*.ts" -exec sed -i "s/${template_name_dash}-template/$program_name_dash/g" {} \; 2>/dev/null || true
     
     echo -e "${GREEN}✓ Rust source files updated${NC}"
 }
