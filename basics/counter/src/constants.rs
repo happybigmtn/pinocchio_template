@@ -1,1 +1,1 @@
-pub const ADDRESS_INFO_SEED: &[u8] = b"address_info";
+pub const COUNTER_SEED: &[u8] = b"counter";

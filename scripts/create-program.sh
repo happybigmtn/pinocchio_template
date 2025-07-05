@@ -221,468 +221,493 @@ create_test_files() {
     local target_dir="$CATEGORY/$PROGRAM_NAME"
     local program_name_dash=$(echo "$PROGRAM_NAME" | tr '_' '-')
     local program_name_snake=$(echo "$PROGRAM_NAME" | tr '-' '_')
+    local program_name_title=$(echo "$PROGRAM_NAME" | tr '_-' ' ' | sed 's/\b\w/\U&/g')
     
     # Create tests directory if it doesn't exist
     mkdir -p "$target_dir/tests"
     
-    # Copy template test files if they exist - dynamically based on template
-    local template_test_dir="templates/$TEMPLATE_NAME/tests"
+    local template_test_dir="templates/account-data/tests"
     
-    # If the specific template doesn't have tests, fall back to account-data template
-    if [ ! -d "$template_test_dir" ]; then
-        echo -e "${YELLOW}Template $TEMPLATE_NAME doesn't have tests directory, using account-data template...${NC}"
-        template_test_dir="templates/account-data/tests"
-    fi
-    
+    # Copy utility files and documentation if they exist
     if [ -d "$template_test_dir" ]; then
-        echo -e "${YELLOW}Copying template test files from $template_test_dir...${NC}"
+        echo -e "${YELLOW}Setting up test documentation and utilities...${NC}"
         
-        # Copy Mollusk test utilities
+        # Copy generic test utilities (keep these functional)
         if [ -f "$template_test_dir/genericmollusk.rs" ]; then
             cp "$template_test_dir/genericmollusk.rs" "$target_dir/tests/"
             echo -e "${GREEN}✓ Copied Mollusk test utilities${NC}"
         fi
         
-        # Copy Kite test utilities  
         if [ -f "$template_test_dir/generickite.ts" ]; then
             cp "$template_test_dir/generickite.ts" "$target_dir/tests/"
             echo -e "${GREEN}✓ Copied Kite test utilities${NC}"
         fi
         
-        # Copy test template README
+        # Copy comprehensive test documentation
         if [ -f "$template_test_dir/TEST_TEMPLATE_README.md" ]; then
             cp "$template_test_dir/TEST_TEMPLATE_README.md" "$target_dir/tests/"
             echo -e "${GREEN}✓ Copied test documentation${NC}"
         fi
-        
-        # Copy program-specific Rust test as a template
-        # Look for any .rs file that matches the template name pattern
-        local template_rust_test=""
-        case $TEMPLATE_NAME in
-            counter)
-                # For counter template, look for counter.rs or account_data.rs as fallback
-                if [ -f "$template_test_dir/counter.rs" ]; then
-                    template_rust_test="$template_test_dir/counter.rs"
-                elif [ -f "$template_test_dir/account_data.rs" ]; then
-                    template_rust_test="$template_test_dir/account_data.rs"
-                fi
-                ;;
-            account-data)
-                if [ -f "$template_test_dir/account_data.rs" ]; then
-                    template_rust_test="$template_test_dir/account_data.rs"
-                fi
-                ;;
-            *)
-                # For other templates, look for a .rs file that matches the template name
-                local template_name_snake=$(echo "$TEMPLATE_NAME" | tr '-' '_')
-                if [ -f "$template_test_dir/${template_name_snake}.rs" ]; then
-                    template_rust_test="$template_test_dir/${template_name_snake}.rs"
-                elif [ -f "$template_test_dir/account_data.rs" ]; then
-                    template_rust_test="$template_test_dir/account_data.rs"
-                fi
-                ;;
-        esac
-        
-        if [ -n "$template_rust_test" ] && [ -f "$template_rust_test" ]; then
-            cp "$template_rust_test" "$target_dir/tests/$program_name_snake.rs"
-            # Update the copied Rust test file with the new program name
-            sed -i "s/account_data/$program_name_snake/g" "$target_dir/tests/$program_name_snake.rs"
-            sed -i "s/account-data/$program_name_dash/g" "$target_dir/tests/$program_name_snake.rs"
-            # Also replace counter references if copying from counter template
-            sed -i "s/counter/$program_name_snake/g" "$target_dir/tests/$program_name_snake.rs"
-            echo -e "${GREEN}✓ Created Rust test template from $(basename "$template_rust_test")${NC}"
-            
-            # Remove the original template file to avoid duplicates (unless it's the same file)
-            if [ "$(basename "$template_rust_test")" != "$program_name_snake.rs" ]; then
-                rm -f "$target_dir/tests/$(basename "$template_rust_test")"
-                echo -e "${GREEN}✓ Removed duplicate template file $(basename "$template_rust_test")${NC}"
-            fi
-        else
-            echo -e "${YELLOW}⚠ No suitable Rust test template found, creating basic test file${NC}"
-        fi
-        
-        # Copy TypeScript test if it exists
-        local template_ts_test=""
-        case $TEMPLATE_NAME in
-            counter)
-                if [ -f "$template_test_dir/counter.test.ts" ]; then
-                    template_ts_test="$template_test_dir/counter.test.ts"
-                elif [ -f "$template_test_dir/account-data.test.ts" ]; then
-                    template_ts_test="$template_test_dir/account-data.test.ts"
-                fi
-                ;;
-            account-data)
-                if [ -f "$template_test_dir/account-data.test.ts" ]; then
-                    template_ts_test="$template_test_dir/account-data.test.ts"
-                fi
-                ;;
-            *)
-                local template_name_dash_file="$template_test_dir/${TEMPLATE_NAME}.test.ts"
-                if [ -f "$template_name_dash_file" ]; then
-                    template_ts_test="$template_name_dash_file"
-                elif [ -f "$template_test_dir/account-data.test.ts" ]; then
-                    template_ts_test="$template_test_dir/account-data.test.ts"
-                fi
-                ;;
-        esac
-        
-        if [ -n "$template_ts_test" ] && [ -f "$template_ts_test" ]; then
-            # Copy and customize the TypeScript test
-            cp "$template_ts_test" "$target_dir/tests/$program_name_dash.test.ts"
-            # Update references in the TypeScript test
-            sed -i "s/account-data/$program_name_dash/g" "$target_dir/tests/$program_name_dash.test.ts"
-            sed -i "s/account_data/$program_name_snake/g" "$target_dir/tests/$program_name_dash.test.ts"
-            sed -i "s/counter/$program_name_snake/g" "$target_dir/tests/$program_name_dash.test.ts"
-            echo -e "${GREEN}✓ Created TypeScript test from $(basename "$template_ts_test")${NC}"
-            
-            # Remove the original template file to avoid duplicates (unless it's the same file)
-            if [ "$(basename "$template_ts_test")" != "$program_name_dash.test.ts" ]; then
-                rm -f "$target_dir/tests/$(basename "$template_ts_test")"
-                echo -e "${GREEN}✓ Removed duplicate template file $(basename "$template_ts_test")${NC}"
-            fi
-        else
-            echo -e "${YELLOW}⚠ No TypeScript test template found, will create comprehensive Kite test below${NC}"
-        fi
-    else
-        echo -e "${YELLOW}⚠ No test templates found, creating basic test files${NC}"
     fi
     
-    # Create TypeScript test file with comprehensive Kite function demonstrations if not already created above
-    if [ ! -f "$target_dir/tests/$program_name_dash.test.ts" ]; then
-        echo -e "${YELLOW}Creating comprehensive Kite test file...${NC}"
-        # Using functions from Solana Kite: https://github.com/helius-labs/kite-og
-        cat > "$target_dir/tests/$program_name_dash.test.ts" << EOF
+    # Create Rust test guide as markdown
+    echo -e "${YELLOW}Creating Rust test guide (markdown)...${NC}"
+    cat > "$target_dir/tests/rust-test-guide.md" << EOF
+# Rust Testing Guide for ${program_name_title}
+
+This guide shows how to write Mollusk SVM tests for your ${program_name_title} program.
+
+## Example Test Structure
+
+\`\`\`rust
+#[cfg(test)]
+mod tests {
+    use ${program_name_snake}::{
+        // Import your program's types and constants
+        state::{YourState, YourInstructionData},
+        ID,
+    };
+    use mollusk_svm::{
+        result::{Check, ProgramResult},
+        Mollusk,
+    };
+    use pinocchio_helper::create_padded_array;
+    use solana_sdk::{
+        account::AccountSharedData,
+        instruction::{AccountMeta, Instruction},
+        native_token::LAMPORTS_PER_SOL,
+        pubkey::Pubkey,
+    };
+
+    pub const PROGRAM_ID: Pubkey = Pubkey::new_from_array(ID);
+
+    #[test]
+    fn test_your_instruction() {
+        // 1. Initialize Mollusk with your program
+        let mollusk = Mollusk::new(&PROGRAM_ID, "../../target/deploy/${program_name_snake}");
+
+        // 2. Create test accounts
+        let (system_program, system_account) =
+            mollusk_svm::program::keyed_account_for_system_program();
+
+        let owner = Pubkey::new_from_array([0x02; 32]);
+        let owner_account = AccountSharedData::new(LAMPORTS_PER_SOL, 0, &system_program);
+
+        let data_account_pubkey = Pubkey::new_unique();
+        let data_account = AccountSharedData::new(0, 0, &system_program);
+
+        // 3. Create instruction data
+        let ix_data = YourInstructionData {
+            // Fill in your instruction data fields
+        };
+
+        let ix_data_bytes = bytemuck::bytes_of(&ix_data);
+        let data = [vec![0], ix_data_bytes.to_vec()].concat(); // 0 = instruction index
+
+        // 4. Build instruction
+        let instruction = Instruction::new_with_bytes(
+            PROGRAM_ID,
+            &data,
+            vec![
+                AccountMeta::new(owner, true),
+                AccountMeta::new(data_account_pubkey, true),
+                AccountMeta::new_readonly(system_program, false),
+            ],
+        );
+
+        // 5. Execute and validate
+        let result = mollusk
+            .process_and_validate_instruction(
+                &instruction,
+                &[
+                    (owner, owner_account.into()),
+                    (data_account_pubkey, data_account.into()),
+                    (system_program, system_account),
+                ],
+                &[
+                    Check::success(),
+                    Check::account(&data_account_pubkey)
+                        .data(ix_data_bytes)
+                        .build(),
+                ],
+            );
+
+        // 6. Additional assertions
+        let updated_data = result.get_account(&data_account_pubkey).unwrap();
+        let parsed_data = bytemuck::from_bytes::<YourState>(&updated_data.data);
+        
+        // Add your specific assertions here
+        assert!(result.program_result == ProgramResult::Success);
+    }
+
+    #[test]
+    fn test_error_conditions() {
+        // Test error cases
+        let mollusk = Mollusk::new(&PROGRAM_ID, "../../target/deploy/${program_name_snake}");
+        
+        // Create test scenario that should fail
+        // Use mollusk.process_instruction() and assert on expected errors
+    }
+}
+\`\`\`
+
+## Key Points
+
+1. **Import your program's types**: Update the \`use\` statements to match your program structure
+2. **Update program binary path**: Ensure the path matches your compiled program
+3. **Create realistic test data**: Use actual data structures from your program
+4. **Test both success and failure cases**: Include error condition testing
+5. **Use appropriate account configurations**: Match your program's account requirements
+
+## Running Tests
+
+\`\`\`bash
+# Run all tests
+cargo test
+
+# Run specific test
+cargo test test_your_instruction
+
+# Run with output
+cargo test -- --nocapture
+\`\`\`
+
+## Additional Resources
+
+- See \`genericmollusk.rs\` for utility functions
+- Check \`TEST_TEMPLATE_README.md\` for comprehensive testing guide
+- Mollusk documentation: https://github.com/buffalojoec/mollusk
+EOF
+
+    # Create TypeScript test guide as markdown
+    echo -e "${YELLOW}Creating TypeScript test guide (markdown)...${NC}"
+    cat > "$target_dir/tests/typescript-test-guide.md" << EOF
+# TypeScript Testing Guide for ${program_name_title}
+
+This guide shows how to write Solana Kite tests for your ${program_name_title} program.
+
+## Example Test Structure
+
+\`\`\`typescript
+import { expect, test } from 'bun:test';
+import { connect } from 'solana-kite';
+import { generateKeyPairSigner } from '@solana/kit';
+// Import your generated client (after running gen:client)
+// import { fetchYourData, getYourInstruction } from '../../../clients/${program_name_dash}';
+import { getKiteConnection } from '../../../scripts/rpc-config.js';
+import dotenv from 'dotenv';
+import { join } from 'path';
+
+// Load environment variables
+const envPath = join(__dirname, '../../../.env');
+dotenv.config({ path: envPath });
+
+test('${program_name_dash}:infrastructure', async () => {
+  console.log('🧪 Testing ${program_name_dash} program infrastructure');
+  
+  // Connect to devnet for testing
+  const rpcEndpoint = 'https://api.devnet.solana.com';
+  const wsEndpoint = 'wss://api.devnet.solana.com';
+  const kite = await connect(rpcEndpoint, wsEndpoint);
+  console.log('✅ Connected to devnet successfully');
+  
+  // Test basic RPC connectivity
+  const version = await kite.rpc.getVersion().send();
+  console.log('✅ RPC version:', version['solana-core']);
+  
+  // Check program binary exists
+  const fs = require('fs');
+  const programBinary = '../../target/deploy/${program_name_snake}.so';
+  if (fs.existsSync(programBinary)) {
+    console.log('✅ Program binary exists and is ready for deployment');
+  } else {
+    console.log('⚠️  Program binary not found - run cargo build-sbf first');
+  }
+  
+  expect(version['solana-core']).toBeTruthy();
+  console.log('✅ Infrastructure test passed!');
+}, { timeout: 30000 });
+
+test('${program_name_dash}:functionality', async () => {
+  console.log('🔧 Testing ${program_name_dash} program functionality');
+  
+  const kite = await connect('https://api.devnet.solana.com', 'wss://api.devnet.solana.com');
+  
+  // Create test wallet
+  const wallet = await kite.createWallet({ 
+    airdropAmount: lamports(1_000_000_000n) // 1 SOL
+  });
+  
+  // TODO: Add your program-specific tests here
+  // Example:
+  // const instruction = getYourInstruction({
+  //   // your instruction parameters
+  // });
+  // 
+  // const signature = await kite.sendTransactionFromInstructions({
+  //   feePayer: wallet,
+  //   instructions: [instruction],
+  //   commitment: 'confirmed'
+  // });
+  // 
+  // console.log('Transaction completed:', signature);
+  
+  console.log('✅ Add your functionality tests here!');
+}, { timeout: 60000 });
+\`\`\`
+
+## Comprehensive Kite Functions Demo
+
+\`\`\`typescript
 import { describe, test, beforeAll } from 'bun:test';
 import { connect } from 'solana-kite';
 import { address, lamports } from '@solana/kit';
 import { getTransferSolInstruction } from '@solana-program/system';
 
-// Import generated client (will be available after running gen:client)
-// import { ${program_name_snake}Program } from '../clients/${program_name_dash}';
-
-describe('${PROGRAM_NAME} - Comprehensive Kite Demo', () => {
+describe('${program_name_title} - Kite Functions Demo', () => {
   let kite: Awaited<ReturnType<typeof connect>>;
-  const programId = address('11111111111111111111111111111111'); // Will be updated after deployment
+  const programId = address('11111111111111111111111111111111'); // Update after deployment
 
   beforeAll(async () => {
-    // Use standard Solana devnet RPC for testing (Helius may have restrictions)
-    // For production, use Helius RPC from the config
     const rpcEndpoint = 'https://api.devnet.solana.com';
     const wsEndpoint = 'wss://api.devnet.solana.com';
     kite = await connect(rpcEndpoint, wsEndpoint);
   });
 
-  test('should demonstrate all Kite wallet functions', async () => {
-    console.log('\n🔑 === WALLET MANAGEMENT FUNCTIONS ===');
+  test('wallet management', async () => {
+    // 1. createWallet - Create wallets with options
+    const basicWallet = await kite.createWallet();
+    const customWallet = await kite.createWallet({ 
+      airdropAmount: lamports(2_000_000_000n), // 2 SOL
+      prefix: 'TEST'
+    });
     
-    try {
-      // 1. createWallet - Create a new wallet
-      console.log('\n1️⃣  Creating wallets with different options...');
-      
-      const basicWallet = await kite.createWallet();
-      console.log('Basic wallet created:', basicWallet.address);
-      
-      const customWallet = await kite.createWallet({ 
-        airdropAmount: lamports(2_000_000_000n), // 2 SOL
-        prefix: 'COOL',
-        suffix: 'TEST'
-      });
-      console.log('Custom wallet created with prefix/suffix:', customWallet.address);
-      
-      // 2. createWallets - Create multiple wallets at once
-      console.log('\n2️⃣  Creating multiple wallets...');
-      const multipleWallets = await kite.createWallets(3, {
-        airdropAmount: lamports(500_000_000n) // 0.5 SOL each
-      });
-      console.log('Created', multipleWallets.length, 'wallets:', multipleWallets.map(w => w.address));
-      
-      console.log('✅ Wallet creation functions working!');
-    } catch (error) {
-      console.error('❌ Wallet functions error:', error);
-    }
-  }, { timeout: 120000 });
+    // 2. createWallets - Create multiple wallets
+    const multipleWallets = await kite.createWallets(3, {
+      airdropAmount: lamports(500_000_000n) // 0.5 SOL each
+    });
+    
+    console.log('Created wallets:', multipleWallets.map(w => w.address));
+  });
 
-  test('should demonstrate SOL balance and transfer functions', async () => {
-    console.log('\n💰 === SOL MANAGEMENT FUNCTIONS ===');
+  test('SOL management', async () => {
+    const sender = await kite.createWallet({ airdropAmount: lamports(2_000_000_000n) });
+    const receiver = await kite.createWallet();
     
-    try {
-      // Create test wallets
-      const sender = await kite.createWallet({ 
-        airdropAmount: lamports(2_000_000_000n) // 2 SOL
-      });
-      const receiver = await kite.createWallet();
-      
-      // 3. getLamportBalance - Get SOL balance
-      console.log('\n3️⃣  Checking balances...');
-      const senderBalance = await kite.getLamportBalance(sender.address);
-      const receiverBalance = await kite.getLamportBalance(receiver.address);
-      console.log('Sender balance:', Number(senderBalance) / 1_000_000_000, 'SOL');
-      console.log('Receiver balance:', Number(receiverBalance) / 1_000_000_000, 'SOL');
-      
-      // 4. airdropIfRequired - Conditional airdrop
-      console.log('\n4️⃣  Testing conditional airdrop...');
-      const minimumBalance = lamports(1_000_000_000n); // 1 SOL
-      const airdropAmount = lamports(1_500_000_000n); // 1.5 SOL
-      
-      const airdropSig = await kite.airdropIfRequired(
-        receiver.address,
-        airdropAmount,
-        minimumBalance
-      );
-      
-      if (airdropSig) {
-        console.log('Airdrop completed, signature:', airdropSig);
-      } else {
-        console.log('No airdrop needed, sufficient balance');
-      }
-      
-      // 5. transferLamports - Transfer SOL between wallets
-      console.log('\n5️⃣  Transferring SOL...');
-      const transferAmount = lamports(250_000_000n); // 0.25 SOL
-      const transferSig = await kite.transferLamports({
-        source: sender,
-        destination: receiver.address,
-        amount: transferAmount,
-        skipPreflight: false,
-        maximumClientSideRetries: 3
-      });
-      
-      console.log('SOL transfer completed, signature:', transferSig);
-      
-      // Check balances after transfer
-      const newSenderBalance = await kite.getLamportBalance(sender.address);
-      const newReceiverBalance = await kite.getLamportBalance(receiver.address);
-      console.log('New sender balance:', Number(newSenderBalance) / 1_000_000_000, 'SOL');
-      console.log('New receiver balance:', Number(newReceiverBalance) / 1_000_000_000, 'SOL');
-      
-      console.log('✅ SOL management functions working!');
-    } catch (error) {
-      console.error('❌ SOL functions error:', error);
-    }
-  }, { timeout: 120000 });
+    // 3. getLamportBalance - Check balances
+    const senderBalance = await kite.getLamportBalance(sender.address);
+    console.log('Sender balance:', Number(senderBalance) / 1_000_000_000, 'SOL');
+    
+    // 4. airdropIfRequired - Conditional airdrop
+    await kite.airdropIfRequired(
+      receiver.address,
+      lamports(1_500_000_000n),
+      lamports(1_000_000_000n)
+    );
+    
+    // 5. transferLamports - Transfer SOL
+    const transferSig = await kite.transferLamports({
+      source: sender,
+      destination: receiver.address,
+      amount: lamports(250_000_000n)
+    });
+    console.log('Transfer completed:', transferSig);
+  });
 
-  test('should demonstrate token functions', async () => {
-    console.log('\n🪙 === TOKEN MANAGEMENT FUNCTIONS ===');
+  test('token management', async () => {
+    const mintAuthority = await kite.createWallet({ airdropAmount: lamports(2_000_000_000n) });
     
-    try {
-      // Create a wallet to be the mint authority
-      const mintAuthority = await kite.createWallet({ 
-        airdropAmount: lamports(2_000_000_000n) // 2 SOL
-      });
-      
-      // 6. createTokenMint - Create a new token
-      console.log('\n6️⃣  Creating a new token mint...');
-      const mintAddress = await kite.createTokenMint({
-        mintAuthority,
-        decimals: 9,
-        name: 'Test Token',
-        symbol: 'TEST',
-        uri: 'https://example.com/token.json',
-        additionalMetadata: {
-          description: 'A test token created with Kite',
-          category: 'utility'
-        }
-      });
-      console.log('Token mint created:', mintAddress);
-      
-      // 7. getMint - Get token mint information
-      console.log('\n7️⃣  Getting mint information...');
-      const mintInfo = await kite.getMint(mintAddress);
-      console.log('Mint info - decimals:', mintInfo.decimals, 'supply:', mintInfo.supply);
-      
-      // 8. getTokenAccountAddress - Get token account address
-      console.log('\n8️⃣  Getting token account addresses...');
-      const authorityTokenAccount = await kite.getTokenAccountAddress(
-        mintAuthority.address,
-        mintAddress
-      );
-      console.log('Mint authority token account:', authorityTokenAccount);
-      
-      // Create a recipient wallet
-      const recipient = await kite.createWallet({ 
-        airdropAmount: lamports(1_000_000_000n) // 1 SOL
-      });
-      
-      const recipientTokenAccount = await kite.getTokenAccountAddress(
-        recipient.address,
-        mintAddress
-      );
-      console.log('Recipient token account:', recipientTokenAccount);
-      
-      // 9. mintTokens - Mint tokens to an account
-      console.log('\n9️⃣  Minting tokens...');
-      const mintAmount = 1000n * 10n ** 9n; // 1000 tokens with 9 decimals
-      const mintSig = await kite.mintTokens(
-        mintAddress,
-        mintAuthority,
-        mintAmount,
-        mintAuthority.address
-      );
-      console.log('Tokens minted, signature:', mintSig);
-      
-      // 10. getTokenAccountBalance - Get token account balance
-      console.log('\n🔟 Getting token balances...');
-      const authorityBalance = await kite.getTokenAccountBalance(authorityTokenAccount);
-      console.log('Authority token balance:', Number(authorityBalance.amount) / 10**9, 'tokens');
-      
-      // 11. transferTokens - Transfer tokens between accounts
-      console.log('\n1️⃣1️⃣ Transferring tokens...');
-      const transferAmount = 100n * 10n ** 9n; // 100 tokens
-      const tokenTransferSig = await kite.transferTokens({
-        sender: mintAuthority,
-        destination: recipient.address,
-        mintAddress,
-        amount: transferAmount,
-        maximumClientSideRetries: 3
-      });
-      console.log('Tokens transferred, signature:', tokenTransferSig);
-      
-      // Check balances after transfer
-      const newAuthorityBalance = await kite.getTokenAccountBalance(authorityTokenAccount);
-      const recipientBalance = await kite.getTokenAccountBalance(recipientTokenAccount);
-      console.log('New authority balance:', Number(newAuthorityBalance.amount) / 10**9, 'tokens');
-      console.log('Recipient balance:', Number(recipientBalance.amount) / 10**9, 'tokens');
-      
-      // 12. checkTokenAccountIsClosed - Check if token account is closed
-      console.log('\n1️⃣2️⃣ Checking if token accounts are closed...');
-      const isAuthorityClosed = await kite.checkTokenAccountIsClosed(authorityTokenAccount);
-      const isRecipientClosed = await kite.checkTokenAccountIsClosed(recipientTokenAccount);
-      console.log('Authority account closed:', isAuthorityClosed);
-      console.log('Recipient account closed:', isRecipientClosed);
-      
-      console.log('✅ Token management functions working!');
-    } catch (error) {
-      console.error('❌ Token functions error:', error);
-    }
-  }, { timeout: 180000 });
+    // 6. createTokenMint - Create new token
+    const mintAddress = await kite.createTokenMint({
+      mintAuthority,
+      decimals: 9,
+      name: 'Test Token',
+      symbol: 'TEST'
+    });
+    
+    // 7. getMint - Get mint info
+    const mintInfo = await kite.getMint(mintAddress);
+    console.log('Mint decimals:', mintInfo.decimals);
+    
+    // 8. getTokenAccountAddress - Get token account
+    const tokenAccount = await kite.getTokenAccountAddress(
+      mintAuthority.address,
+      mintAddress
+    );
+    
+    // 9. mintTokens - Mint tokens
+    const mintAmount = 1000n * 10n ** 9n; // 1000 tokens
+    await kite.mintTokens(mintAddress, mintAuthority, mintAmount, mintAuthority.address);
+    
+    // 10. getTokenAccountBalance - Check balance
+    const balance = await kite.getTokenAccountBalance(tokenAccount);
+    console.log('Token balance:', Number(balance.amount) / 10**9);
+    
+    // 11. transferTokens - Transfer tokens
+    const recipient = await kite.createWallet({ airdropAmount: lamports(1_000_000_000n) });
+    await kite.transferTokens({
+      sender: mintAuthority,
+      destination: recipient.address,
+      mintAddress,
+      amount: 100n * 10n ** 9n
+    });
+  });
 
-  test('should demonstrate transaction and utility functions', async () => {
-    console.log('\n⚙️ === TRANSACTION & UTILITY FUNCTIONS ===');
+  test('transaction utilities', async () => {
+    const wallet = await kite.createWallet({ airdropAmount: lamports(2_000_000_000n) });
+    const recipient = await kite.createWallet();
     
-    try {
-      const wallet = await kite.createWallet({ 
-        airdropAmount: lamports(2_000_000_000n) // 2 SOL
-      });
-      const recipient1 = await kite.createWallet();
-      const recipient2 = await kite.createWallet();
-      
-      // 13. sendTransactionFromInstructions - Send transaction with multiple instructions
-      console.log('\n1️⃣3️⃣ Sending transaction with multiple instructions...');
-      
-      const instruction1 = getTransferSolInstruction({
-        amount: lamports(50_000_000n), // 0.05 SOL
-        destination: recipient1.address,
-        source: wallet
-      });
-      
-      const instruction2 = getTransferSolInstruction({
-        amount: lamports(75_000_000n), // 0.075 SOL
-        destination: recipient2.address,
-        source: wallet
-      });
-      
-      const multiInstructionSig = await kite.sendTransactionFromInstructions({
-        feePayer: wallet,
-        instructions: [instruction1, instruction2],
-        commitment: 'confirmed',
-        skipPreflight: false,
-        maximumClientSideRetries: 3
-      });
-      
-      console.log('Multi-instruction transaction completed:', multiInstructionSig);
-      
-      // 14. getRecentSignatureConfirmation - Check transaction confirmation
-      console.log('\n1️⃣4️⃣ Checking transaction confirmation...');
-      const isConfirmed = await kite.getRecentSignatureConfirmation(multiInstructionSig);
-      console.log('Transaction confirmed:', isConfirmed);
-      
-      // 15. getLogs - Get transaction logs
-      console.log('\n1️⃣5️⃣ Getting transaction logs...');
-      const logs = await kite.getLogs(multiInstructionSig);
-      console.log('Transaction logs:', logs.slice(0, 3), '... (showing first 3)');
-      
-      // 16. getPDAAndBump - Get Program Derived Address
-      console.log('\n1️⃣6️⃣ Getting PDA and bump seed...');
-      const seeds = [Buffer.from('test'), wallet.address.toBytes()];
-      const [pda, bump] = await kite.getPDAAndBump(seeds, programId);
-      console.log('PDA:', pda);
-      console.log('Bump seed:', bump);
-      
-      // 17. getExplorerLink - Get explorer links for different entities
-      console.log('\n1️⃣7️⃣ Getting explorer links...');
-      const addressLink = kite.getExplorerLink('address', wallet.address);
-      const transactionLink = kite.getExplorerLink('transaction', multiInstructionSig);
-      const blockLink = kite.getExplorerLink('block', '12345');
-      
-      console.log('Explorer links:');
-      console.log('  Address:', addressLink);
-      console.log('  Transaction:', transactionLink);
-      console.log('  Block:', blockLink);
-      
-      console.log('✅ Transaction and utility functions working!');
-    } catch (error) {
-      console.error('❌ Transaction/utility functions error:', error);
-    }
-  }, { timeout: 120000 });
-
-  test('should demonstrate program-specific functionality', async () => {
-    console.log('\n🔧 === PROGRAM-SPECIFIC TESTS ===');
-    console.log('TODO: Add tests specific to ${PROGRAM_NAME} program functionality');
-    console.log('Program ID:', programId);
+    // 12. sendTransactionFromInstructions - Multi-instruction transaction
+    const instruction = getTransferSolInstruction({
+      amount: lamports(50_000_000n),
+      destination: recipient.address,
+      source: wallet
+    });
     
-    try {
-      // TODO: Add program-specific tests here
-      // Example:
-      // const wallet = await kite.createWallet({ airdropAmount: lamports(1_000_000_000n) });
-      // const instruction = create${PROGRAM_NAME}Instruction({ ... });
-      // const signature = await kite.sendTransactionFromInstructions({
-      //   feePayer: wallet,
-      //   instructions: [instruction]
-      // });
-      
-      console.log('✅ Program-specific tests ready for implementation!');
-    } catch (error) {
-      console.error('❌ Program-specific test error:', error);
-    }
-  }, { timeout: 60000 });
+    const signature = await kite.sendTransactionFromInstructions({
+      feePayer: wallet,
+      instructions: [instruction],
+      commitment: 'confirmed'
+    });
+    
+    // 13. getRecentSignatureConfirmation - Check confirmation
+    const isConfirmed = await kite.getRecentSignatureConfirmation(signature);
+    console.log('Transaction confirmed:', isConfirmed);
+    
+    // 14. getLogs - Get transaction logs
+    const logs = await kite.getLogs(signature);
+    console.log('Logs count:', logs.length);
+    
+    // 15. getPDAAndBump - Get Program Derived Address
+    const seeds = [Buffer.from('test'), wallet.address.toBytes()];
+    const [pda, bump] = await kite.getPDAAndBump(seeds, programId);
+    console.log('PDA:', pda, 'Bump:', bump);
+    
+    // 16. getExplorerLink - Get explorer links
+    const addressLink = kite.getExplorerLink('address', wallet.address);
+    const txLink = kite.getExplorerLink('transaction', signature);
+    console.log('Explorer links generated');
+  });
 });
+\`\`\`
+
+## Key Points
+
+1. **Environment Setup**: Configure .env with HELIUS_API_KEY for production
+2. **Client Generation**: Run \`bun gen\` to generate TypeScript client before testing
+3. **Network Selection**: Use devnet for testing, production RPC for deployment
+4. **Timeout Configuration**: Network tests need longer timeouts (30-60 seconds)
+5. **Error Handling**: Always handle network errors and timeouts gracefully
+
+## Running Tests
+
+\`\`\`bash
+# Generate client first
+bun gen
+
+# Run TypeScript tests
+bun test:client:${program_name_dash}
+
+# Run all tests
+bun test
+
+# Run with verbose output
+bun test --verbose
+\`\`\`
+
+## Additional Resources
+
+- See \`generickite.ts\` for utility functions
+- Check \`TEST_TEMPLATE_README.md\` for comprehensive testing guide
+- Solana Kite documentation: https://github.com/helius-labs/kite-og
 EOF
-    else
-        echo -e "${GREEN}✓ TypeScript test already created from template${NC}"
-    fi
     
-    echo -e "${GREEN}✓ Test files created with proper Kite functions${NC}"
+    # Create skeleton test files for users to implement
+    echo -e "${YELLOW}Creating skeleton test files...${NC}"
     
-    # COMPREHENSIVE TEMPLATE NAME REPLACEMENT
-    # Apply replacements in multiple passes to ensure all patterns are caught
-    echo "  Applying comprehensive template name replacements to test files..."
+    # Create skeleton Rust test file
+    cat > "$target_dir/tests/${program_name_snake}.rs" << EOF
+// Skeleton test file for ${program_name_title}
+// See rust-test-guide.md for examples and implementation guide
+
+#[cfg(test)]
+mod tests {
+    use ${program_name_snake}::{
+        // TODO: Import your program's types and constants
+        // state::{YourState, YourInstructionData},
+        ID,
+    };
+    use mollusk_svm::{
+        result::{Check, ProgramResult},
+        Mollusk,
+    };
+    use solana_sdk::{
+        account::AccountSharedData,
+        instruction::{AccountMeta, Instruction},
+        native_token::LAMPORTS_PER_SOL,
+        pubkey::Pubkey,
+    };
+
+    pub const PROGRAM_ID: Pubkey = Pubkey::new_from_array(ID);
+
+    #[test]
+    fn test_placeholder() {
+        // TODO: Implement your tests here
+        // See rust-test-guide.md for examples
+        
+        // Basic program initialization test
+        let _mollusk = Mollusk::new(&PROGRAM_ID, "../../target/deploy/${program_name_snake}");
+        
+        // This test passes by default - replace with actual tests
+        assert!(true);
+    }
     
-    # Pass 1: Replace common template crate names in all text contexts
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.md" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.md" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    
-    # Pass 2: Replace specific binary path patterns in mollusk tests
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"../../target/deploy/account_data_template\"|\"../../target/deploy/$program_name_snake\"|g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"../../target/deploy/counter_template\"|\"../../target/deploy/$program_name_snake\"|g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"account_data_template\"|\"$program_name_snake\"|g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"counter_template\"|\"$program_name_snake\"|g" {} \; 2>/dev/null || true
-    
-    # Pass 3: Generic replacement for any remaining *_template patterns in use statements
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/use [a-z_]*_template::/use $program_name_snake::/g" {} \; 2>/dev/null || true
-    
-    # Pass 4: Final comprehensive pass to catch any remaining template references
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.md" -exec sed -i "s/account_data_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.md" -exec sed -i "s/counter_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    
-    # Pass 5: Prevent duplication by fixing any accidental double-template patterns
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s/${program_name_snake}_template/$program_name_snake/g" {} \; 2>/dev/null || true
-    find "$target_dir/tests" -name "*.rs" -exec sed -i "s|\"../../target/deploy/${program_name_snake}_template\"|\"../../target/deploy/$program_name_snake\"|g" {} \; 2>/dev/null || true
-    
-    echo "  ✓ Template name replacements completed"
+    // TODO: Add more test functions
+    // #[test]
+    // fn test_your_instruction() {
+    //     // Implement your instruction tests
+    // }
+    //
+    // #[test] 
+    // fn test_error_conditions() {
+    //     // Test error cases
+    // }
+}
+EOF
+
+    # Create skeleton TypeScript test file
+    cat > "$target_dir/tests/${program_name_dash}.test.ts" << EOF
+// Skeleton test file for ${program_name_title}
+// See typescript-test-guide.md for examples and implementation guide
+
+import { expect, test } from 'bun:test';
+import { connect } from 'solana-kite';
+// TODO: Import your generated client after running 'bun gen'
+// import { fetchYourData, getYourInstruction } from '../../../clients/${program_name_dash}';
+
+test('${program_name_dash}:placeholder', async () => {
+  console.log('🧪 ${program_name_title} - Placeholder test');
+  
+  // TODO: Implement your tests here
+  // See typescript-test-guide.md for examples
+  
+  // Basic connectivity test
+  const kite = await connect('https://api.devnet.solana.com', 'wss://api.devnet.solana.com');
+  const version = await kite.rpc.getVersion().send();
+  
+  expect(version['solana-core']).toBeTruthy();
+  console.log('✅ Basic connectivity test passed!');
+  console.log('💡 See typescript-test-guide.md to implement your program tests');
+}, { timeout: 30000 });
+
+// TODO: Add more test functions
+// test('${program_name_dash}:your-functionality', async () => {
+//   // Implement your program-specific tests
+// });
+EOF
+
+    echo -e "${GREEN}✓ Created skeleton test files${NC}"
+    echo -e "${GREEN}✓ Created markdown test guides${NC}"
 }
 
 # Create deployment configuration

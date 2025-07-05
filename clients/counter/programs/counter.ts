@@ -12,17 +12,23 @@ import {
   type Address,
   type ReadonlyUint8Array,
 } from '@solana/kit';
-import { type ParsedCreateInstruction } from '../instructions';
+import {
+  type ParsedCreateInstruction,
+  type ParsedDecreaseInstruction,
+  type ParsedIncreaseInstruction,
+} from '../instructions';
 
 export const COUNTER_PROGRAM_ADDRESS =
-  '8mqZdKKFP1rLWGJk8BtwV88t5YHHfF8v5rQbL9cEqrQx' as Address<'8mqZdKKFP1rLWGJk8BtwV88t5YHHfF8v5rQbL9cEqrQx'>;
+  '7n9593Jjq8ZWGTxkBqMJUgwmSHqBAi5u4nNGR1M41oU1' as Address<'7n9593Jjq8ZWGTxkBqMJUgwmSHqBAi5u4nNGR1M41oU1'>;
 
 export enum CounterAccount {
-  AddressInfo,
+  Counter,
 }
 
 export enum CounterInstruction {
   Create,
+  Increase,
+  Decrease,
 }
 
 export function identifyCounterInstruction(
@@ -32,13 +38,26 @@ export function identifyCounterInstruction(
   if (containsBytes(data, getU8Encoder().encode(0), 0)) {
     return CounterInstruction.Create;
   }
+  if (containsBytes(data, getU8Encoder().encode(1), 0)) {
+    return CounterInstruction.Increase;
+  }
+  if (containsBytes(data, getU8Encoder().encode(2), 0)) {
+    return CounterInstruction.Decrease;
+  }
   throw new Error(
     'The provided instruction could not be identified as a counter instruction.',
   );
 }
 
 export type ParsedCounterInstruction<
-  TProgram extends string = '8mqZdKKFP1rLWGJk8BtwV88t5YHHfF8v5rQbL9cEqrQx',
-> = {
-  instructionType: CounterInstruction.Create;
-} & ParsedCreateInstruction<TProgram>;
+  TProgram extends string = '7n9593Jjq8ZWGTxkBqMJUgwmSHqBAi5u4nNGR1M41oU1',
+> =
+  | ({
+      instructionType: CounterInstruction.Create;
+    } & ParsedCreateInstruction<TProgram>)
+  | ({
+      instructionType: CounterInstruction.Increase;
+    } & ParsedIncreaseInstruction<TProgram>)
+  | ({
+      instructionType: CounterInstruction.Decrease;
+    } & ParsedDecreaseInstruction<TProgram>);

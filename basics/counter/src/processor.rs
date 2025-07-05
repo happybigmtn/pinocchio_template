@@ -2,16 +2,17 @@ use pinocchio::{
     account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey, ProgramResult,
 };
 
-use crate::instructions::{Create, Instruction};
+use crate::instructions::{CounterInstruction, Create, Mutate};
+use crate::state::MutationType;
 use pinocchio_log::log;
 
 #[inline(always)]
 pub fn process_instruction(
-    _program_id: &Pubkey,
+    program_id: &Pubkey,
     accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
-    if _program_id.as_ref() != crate::ID {
+    if program_id != &crate::ID {
         return Err(ProgramError::IncorrectProgramId);
     }
 
@@ -19,10 +20,18 @@ pub fn process_instruction(
         .split_first()
         .ok_or(ProgramError::InvalidInstructionData)?;
 
-    match Instruction::try_from(discriminator)? {
-        Instruction::Create => {
-            log!("Instruction::Create");
+    match CounterInstruction::try_from(discriminator)? {
+        CounterInstruction::Create => {
+            log!("CounterInstruction::Create");
             Create::try_from((accounts, data))?.handler()
+        }
+        CounterInstruction::Increase => {
+            log!("CounterInstruction::Increase");
+            Mutate::try_from(accounts)?.handler(MutationType::INCREASE)
+        }
+        CounterInstruction::Decrease => {
+            log!("CounterInstruction::Decrease");
+            Mutate::try_from(accounts)?.handler(MutationType::DECREASE)
         }
     }
 }

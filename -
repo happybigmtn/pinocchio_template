@@ -13,13 +13,7 @@ pub enum CounterInstruction {
     #[account(1, writable, name = "counter", desc = "The counter account")]
     #[account(2, name = "system_program", desc = "The system program")]
     Create,
-
-    #[account(0, writable, signer, name = "authority", desc = "Counter authority")]
-    #[account(1, writable, name = "counter", desc = "The counter account")]
     Increase,
-
-    #[account(0, writable, signer, name = "authority", desc = "Counter authority")]
-    #[account(1, writable, name = "counter", desc = "The counter account")]
     Decrease,
 }
 
@@ -28,9 +22,9 @@ impl TryFrom<&u8> for CounterInstruction {
 
     fn try_from(value: &u8) -> Result<Self, Self::Error> {
         match *value {
-            0 => Ok(CounterInstruction::Create),
-            1 => Ok(CounterInstruction::Increase),
-            2 => Ok(CounterInstruction::Decrease),
+            0 => Ok(Instruction::Create),
+            1 => Ok(Instruction::Increase),
+            2 => Ok(Instruction::Decrease),
             _ => Err(ProgramError::InvalidInstructionData),
         }
     }

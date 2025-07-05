@@ -12,7 +12,10 @@
     "gen:idl:counter": "shank idl --crate-root basics/counter --out-dir idl",
     "gen:client:account-data": "node scripts/generate-clients.js account-data",
     "test:client:account-data": "bun test --testFiles basics/account-data/tests/account-data.test.ts",
-    "gen:idl:account-data": "shank idl --crate-root basics/account_data --out-dir idl"
+    "gen:idl:account-data": "shank idl --crate-root basics/account_data --out-dir idl",
+    "gen:client:cross-program-invocation": "node scripts/generate-clients.js cross-program-invocation",
+    "test:client:cross-program-invocation": "bun test --testFiles basics/cross-program-invocation/tests/cross-program-invocation.test.ts",
+    "gen:idl:cross-program-invocation": "shank idl --crate-root basics/cross_program_invocation --out-dir idl"
   },
   "devDependencies": {
     "@codama/nodes-from-anchor": "^1.2.1",

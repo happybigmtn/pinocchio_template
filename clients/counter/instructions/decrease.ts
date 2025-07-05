@@ -22,7 +22,6 @@ import {
   type IInstruction,
   type IInstructionWithAccounts,
   type IInstructionWithData,
-  type ReadonlyAccount,
   type TransactionSigner,
   type WritableAccount,
   type WritableSignerAccount,
@@ -30,154 +29,124 @@ import {
 import { COUNTER_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
-export const CREATE_DISCRIMINATOR = 0;
+export const DECREASE_DISCRIMINATOR = 2;
 
-export function getCreateDiscriminatorBytes() {
-  return getU8Encoder().encode(CREATE_DISCRIMINATOR);
+export function getDecreaseDiscriminatorBytes() {
+  return getU8Encoder().encode(DECREASE_DISCRIMINATOR);
 }
 
-export type CreateInstruction<
+export type DecreaseInstruction<
   TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
-  TAccountMaker extends string | IAccountMeta<string> = string,
+  TAccountAuthority extends string | IAccountMeta<string> = string,
   TAccountCounter extends string | IAccountMeta<string> = string,
-  TAccountSystemProgram extends
-    | string
-    | IAccountMeta<string> = '11111111111111111111111111111111',
   TRemainingAccounts extends readonly IAccountMeta<string>[] = [],
 > = IInstruction<TProgram> &
   IInstructionWithData<Uint8Array> &
   IInstructionWithAccounts<
     [
-      TAccountMaker extends string
-        ? WritableSignerAccount<TAccountMaker> &
-            IAccountSignerMeta<TAccountMaker>
-        : TAccountMaker,
+      TAccountAuthority extends string
+        ? WritableSignerAccount<TAccountAuthority> &
+            IAccountSignerMeta<TAccountAuthority>
+        : TAccountAuthority,
       TAccountCounter extends string
         ? WritableAccount<TAccountCounter>
         : TAccountCounter,
-      TAccountSystemProgram extends string
-        ? ReadonlyAccount<TAccountSystemProgram>
-        : TAccountSystemProgram,
       ...TRemainingAccounts,
     ]
   >;
 
-export type CreateInstructionData = { discriminator: number };
+export type DecreaseInstructionData = { discriminator: number };
 
-export type CreateInstructionDataArgs = {};
+export type DecreaseInstructionDataArgs = {};
 
-export function getCreateInstructionDataEncoder(): Encoder<CreateInstructionDataArgs> {
+export function getDecreaseInstructionDataEncoder(): Encoder<DecreaseInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', getU8Encoder()]]),
-    (value) => ({ ...value, discriminator: CREATE_DISCRIMINATOR }),
+    (value) => ({ ...value, discriminator: DECREASE_DISCRIMINATOR }),
   );
 }
 
-export function getCreateInstructionDataDecoder(): Decoder<CreateInstructionData> {
+export function getDecreaseInstructionDataDecoder(): Decoder<DecreaseInstructionData> {
   return getStructDecoder([['discriminator', getU8Decoder()]]);
 }
 
-export function getCreateInstructionDataCodec(): Codec<
-  CreateInstructionDataArgs,
-  CreateInstructionData
+export function getDecreaseInstructionDataCodec(): Codec<
+  DecreaseInstructionDataArgs,
+  DecreaseInstructionData
 > {
   return combineCodec(
-    getCreateInstructionDataEncoder(),
-    getCreateInstructionDataDecoder(),
+    getDecreaseInstructionDataEncoder(),
+    getDecreaseInstructionDataDecoder(),
   );
 }
 
-export type CreateInput<
-  TAccountMaker extends string = string,
+export type DecreaseInput<
+  TAccountAuthority extends string = string,
   TAccountCounter extends string = string,
-  TAccountSystemProgram extends string = string,
 > = {
-  /** The payer of the counter */
-  maker: TransactionSigner<TAccountMaker>;
+  /** Counter authority */
+  authority: TransactionSigner<TAccountAuthority>;
   /** The counter account */
   counter: Address<TAccountCounter>;
-  /** The system program */
-  systemProgram?: Address<TAccountSystemProgram>;
 };
 
-export function getCreateInstruction<
-  TAccountMaker extends string,
+export function getDecreaseInstruction<
+  TAccountAuthority extends string,
   TAccountCounter extends string,
-  TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof COUNTER_PROGRAM_ADDRESS,
 >(
-  input: CreateInput<TAccountMaker, TAccountCounter, TAccountSystemProgram>,
+  input: DecreaseInput<TAccountAuthority, TAccountCounter>,
   config?: { programAddress?: TProgramAddress },
-): CreateInstruction<
-  TProgramAddress,
-  TAccountMaker,
-  TAccountCounter,
-  TAccountSystemProgram
-> {
+): DecreaseInstruction<TProgramAddress, TAccountAuthority, TAccountCounter> {
   // Program address.
   const programAddress = config?.programAddress ?? COUNTER_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
-    maker: { value: input.maker ?? null, isWritable: true },
+    authority: { value: input.authority ?? null, isWritable: true },
     counter: { value: input.counter ?? null, isWritable: true },
-    systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
     ResolvedAccount
   >;
 
-  // Resolve default values.
-  if (!accounts.systemProgram.value) {
-    accounts.systemProgram.value =
-      '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
-  }
-
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   const instruction = {
     accounts: [
-      getAccountMeta(accounts.maker),
+      getAccountMeta(accounts.authority),
       getAccountMeta(accounts.counter),
-      getAccountMeta(accounts.systemProgram),
     ],
     programAddress,
-    data: getCreateInstructionDataEncoder().encode({}),
-  } as CreateInstruction<
-    TProgramAddress,
-    TAccountMaker,
-    TAccountCounter,
-    TAccountSystemProgram
-  >;
+    data: getDecreaseInstructionDataEncoder().encode({}),
+  } as DecreaseInstruction<TProgramAddress, TAccountAuthority, TAccountCounter>;
 
   return instruction;
 }
 
-export type ParsedCreateInstruction<
+export type ParsedDecreaseInstruction<
   TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
   TAccountMetas extends readonly IAccountMeta[] = readonly IAccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
-    /** The payer of the counter */
-    maker: TAccountMetas[0];
+    /** Counter authority */
+    authority: TAccountMetas[0];
     /** The counter account */
     counter: TAccountMetas[1];
-    /** The system program */
-    systemProgram: TAccountMetas[2];
   };
-  data: CreateInstructionData;
+  data: DecreaseInstructionData;
 };
 
-export function parseCreateInstruction<
+export function parseDecreaseInstruction<
   TProgram extends string,
   TAccountMetas extends readonly IAccountMeta[],
 >(
   instruction: IInstruction<TProgram> &
     IInstructionWithAccounts<TAccountMetas> &
     IInstructionWithData<Uint8Array>,
-): ParsedCreateInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 3) {
+): ParsedDecreaseInstruction<TProgram, TAccountMetas> {
+  if (instruction.accounts.length < 2) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -190,10 +159,9 @@ export function parseCreateInstruction<
   return {
     programAddress: instruction.programAddress,
     accounts: {
-      maker: getNextAccount(),
+      authority: getNextAccount(),
       counter: getNextAccount(),
-      systemProgram: getNextAccount(),
     },
-    data: getCreateInstructionDataDecoder().decode(instruction.data),
+    data: getDecreaseInstructionDataDecoder().decode(instruction.data),
   };
 }

@@ -7,3 +7,5 @@
  */
 
 export * from './create';
+export * from './decrease';
+export * from './increase';

@@ -11,6 +11,7 @@ crate-type = ["lib", "cdylib"]
 [features]
 no-entrypoint = []
 idl = []
+cpi = ["no-entrypoint"]
 
 [dependencies]
 pinocchio = { workspace = true }

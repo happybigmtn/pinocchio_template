@@ -6,19 +6,19 @@
       "name": "Create",
       "accounts": [
         {
-          "name": "payer",
+          "name": "maker",
           "isMut": true,
           "isSigner": true,
           "docs": [
-            "The account that will pay for the transaction and rent"
+            "The payer of the counter"
           ]
         },
         {
-          "name": "addressInfo",
+          "name": "counter",
           "isMut": true,
-          "isSigner": true,
+          "isSigner": false,
           "docs": [
-            "The address info account to create (must be a new keypair)"
+            "The counter account"
           ]
         },
         {
@@ -26,7 +26,7 @@
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "System Program for account creation"
+            "The system program"
           ]
         }
       ],
@@ -35,42 +35,72 @@
         "type": "u8",
         "value": 0
       }
+    },
+    {
+      "name": "Increase",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "Counter authority"
+          ]
+        },
+        {
+          "name": "counter",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The counter account"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 1
+      }
+    },
+    {
+      "name": "Decrease",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "Counter authority"
+          ]
+        },
+        {
+          "name": "counter",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "The counter account"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 2
+      }
     }
   ],
   "accounts": [
     {
-      "name": "AddressInfo",
+      "name": "Counter",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "name",
+            "name": "count",
             "type": {
               "array": [
                 "u8",
-                50
-              ]
-            }
-          },
-          {
-            "name": "houseNumber",
-            "type": "u8"
-          },
-          {
-            "name": "street",
-            "type": {
-              "array": [
-                "u8",
-                50
-              ]
-            }
-          },
-          {
-            "name": "city",
-            "type": {
-              "array": [
-                "u8",
-                50
+                8
               ]
             }
           }
@@ -80,40 +110,15 @@
   ],
   "types": [
     {
-      "name": "CreateAddressInfoInstructionData",
+      "name": "MutationType",
       "type": {
-        "kind": "struct",
-        "fields": [
+        "kind": "enum",
+        "variants": [
           {
-            "name": "name",
-            "type": {
-              "array": [
-                "u8",
-                50
-              ]
-            }
+            "name": "INCREASE"
           },
           {
-            "name": "houseNumber",
-            "type": "u8"
-          },
-          {
-            "name": "street",
-            "type": {
-              "array": [
-                "u8",
-                50
-              ]
-            }
-          },
-          {
-            "name": "city",
-            "type": {
-              "array": [
-                "u8",
-                50
-              ]
-            }
+            "name": "DECREASE"
           }
         ]
       }
@@ -121,6 +126,6 @@
   ],
   "metadata": {
     "origin": "shank",
-    "address": "8mqZdKKFP1rLWGJk8BtwV88t5YHHfF8v5rQbL9cEqrQx"
+    "address": "7n9593Jjq8ZWGTxkBqMJUgwmSHqBAi5u4nNGR1M41oU1"
   }
 }
