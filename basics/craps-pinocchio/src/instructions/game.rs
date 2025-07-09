@@ -10,7 +10,7 @@ use pinocchio_log::log;
 use crate::{
     constants::*,
     error::CrapsError,
-    state::{GlobalGameState, RngState, RngPhase},
+    state::{GlobalGameState, BonusState, RngState, RngPhase},
     utils::{*, dice},
 };
 
@@ -20,11 +20,11 @@ pub fn secure_auto_roll_handler(
     _data: &[u8],
 ) -> ProgramResult {
     // Validate accounts
-    if accounts.len() < 4 {
+    if accounts.len() < 5 {
         return Err(ProgramError::NotEnoughAccountKeys);
     }
 
-    let [_global_game_state, rng_state, treasury, rng_authority] = accounts else {
+    let [_global_game_state, bonus_state, rng_state, treasury, rng_authority] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
@@ -39,6 +39,14 @@ pub fn secure_auto_roll_handler(
         &crate::ID,
     );
     if _global_game_state.key() != &game_state_pda {
+        return Err(CrapsError::InvalidPDA.into());
+    }
+
+    let (bonus_state_pda, _) = pubkey::find_program_address(
+        &[BONUS_STATE_SEED],
+        &crate::ID,
+    );
+    if bonus_state.key() != &bonus_state_pda {
         return Err(CrapsError::InvalidPDA.into());
     }
 
@@ -92,9 +100,15 @@ pub fn secure_auto_roll_handler(
     let roll_type = get_roll_type(dice1, dice2);
     log!("Auto roll executed: {} + {} = {} ({})", dice1, dice2, dice_sum, roll_type);
 
-    // Update game state based on roll
+    // Load and update bonus state
+    let mut bonus_state_data = bonus_state.try_borrow_mut_data()?;
+    let bonus_data = bytemuck::from_bytes_mut::<BonusState>(&mut bonus_state_data[..]);
+    
+    // Update bonus state based on dice roll
     let current_phase = game_state.game_phase;
     let current_point = game_state.current_point;
+    
+    bonus_data.update_for_roll(dice1, dice2, dice_sum, current_point);
 
     match current_phase {
         PHASE_COME_OUT => {
@@ -128,6 +142,9 @@ pub fn secure_auto_roll_handler(
                 log!("Seven out! Don't pass wins");
                 game_state.game_phase = PHASE_COME_OUT;
                 game_state.current_point = 0;
+                
+                // Reset bonus state on seven-out
+                bonus_data.reset_on_seven_out();
                 
                 // Advance epoch on seven-out
                 let new_epoch = current_epoch + 1;

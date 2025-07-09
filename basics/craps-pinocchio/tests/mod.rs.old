@@ -6,8 +6,8 @@ use pinocchio::{
     pubkey,
     sysvars::clock::Clock,
     program::invoke_signed,
-    system_program,
 };
+use solana_sdk::system_program;
 use mollusk_svm::{Mollusk, result::Check};
 use solana_sdk::{
     account::Account as SolanaAccount,
@@ -20,12 +20,18 @@ use bytemuck::{Pod, Zeroable};
 
 // Import our program modules
 use craps_pinocchio::*;
+use craps_pinocchio::{
+    constants::*,
+    instructions::CrapsInstruction,
+    state::*,
+};
 
-pub const PROGRAM_ID: Pubkey = craps_pinocchio::ID;
+const PROGRAM_ID: pinocchio::pubkey::Pubkey = craps_pinocchio::ID;
+const PROGRAM_ID_SDK: solana_sdk::pubkey::Pubkey = solana_sdk::pubkey::Pubkey::new_from_array(craps_pinocchio::ID);
 
 /// Test helper to create a mollusk instance
 pub fn create_mollusk() -> Mollusk {
-    Mollusk::new(&PROGRAM_ID, "target/deploy/craps_pinocchio")
+    Mollusk::new(&PROGRAM_ID_SDK, "target/deploy/craps_pinocchio")
 }
 
 /// Test helper to create test keypairs
@@ -73,6 +79,33 @@ pub fn derive_bet_batch_pda(player: &Pubkey, epoch: u64) -> (Pubkey, u8) {
     )
 }
 
+/// Test helper to create initialized accounts
+pub fn create_initialized_accounts(mollusk: &Mollusk) -> (Keypair, Keypair, Keypair, Pubkey, Pubkey, Pubkey) {
+    let (admin, player, rng_authority) = create_test_keypairs();
+    let (global_state_pda, treasury_pda, rng_state_pda) = derive_pdas();
+    
+    // Create accounts for PDAs
+    let global_state_account = SolanaAccount::new(
+        mollusk.sysvars.rent.minimum_balance(GlobalGameState::LEN),
+        GlobalGameState::LEN,
+        &PROGRAM_ID,
+    );
+    
+    let treasury_account = SolanaAccount::new(
+        mollusk.sysvars.rent.minimum_balance(Treasury::LEN),
+        Treasury::LEN,
+        &PROGRAM_ID,
+    );
+    
+    let rng_state_account = SolanaAccount::new(
+        mollusk.sysvars.rent.minimum_balance(RngState::LEN),
+        RngState::LEN,
+        &PROGRAM_ID,
+    );
+    
+    (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda)
+}
+
 /// Test helper to create instruction data
 pub fn create_instruction_data(discriminant: u8, data: &[u8]) -> Vec<u8> {
     let mut instruction_data = vec![discriminant];
@@ -92,8 +125,8 @@ pub fn check_account_data_mut<T: Pod>(account_data: &mut [u8]) -> &mut T {
 
 /// Test helper to create a basic initialized game state
 pub fn setup_basic_game_state(mollusk: &Mollusk) -> (Keypair, Keypair, Keypair, Pubkey, Pubkey, Pubkey) {
-    let (admin, player, rng_authority) = create_test_keypairs();
-    let (global_state_pda, treasury_pda, rng_state_pda) = derive_pdas();
+    let (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda) = 
+        create_initialized_accounts(mollusk);
     
     // Initialize system instruction
     let init_data = create_instruction_data(CrapsInstruction::InitializeSystem as u8, &[]);
@@ -336,176 +369,257 @@ pub fn simulate_dice_roll(
     );
 }
 
-/// Test helper to claim winnings
-pub fn claim_winnings(
-    mollusk: &Mollusk,
-    player: &Keypair,
-    player_pda: &Pubkey,
-    bet_batch_pda: &Pubkey,
-    global_state_pda: &Pubkey,
-    treasury_pda: &Pubkey,
-    epoch: u64,
-) {
-    let mut claim_data = vec![];
-    claim_data.extend_from_slice(&epoch.to_le_bytes());
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use craps_pinocchio::constants::*;
     
-    let claim_instruction_data = create_instruction_data(
-        CrapsInstruction::ClaimEpochPayoutsUnified as u8,
-        &claim_data,
-    );
-    
-    let instruction = Instruction::new_with_bytes(
-        PROGRAM_ID,
-        &claim_instruction_data,
-        vec![
-            AccountMeta::new(*player_pda, false),
-            AccountMeta::new(*bet_batch_pda, false),
-            AccountMeta::new_readonly(*global_state_pda, false),
-            AccountMeta::new(*treasury_pda, false),
-            AccountMeta::new_readonly(player.pubkey(), true),
-        ],
-    );
-    
-    mollusk.process_and_validate_instruction(
-        &instruction,
-        &vec![
-            (*player_pda, SolanaAccount::new_ref(
-                mollusk.sysvars.rent.minimum_balance(ScalablePlayerState::LEN),
-                ScalablePlayerState::LEN,
-                &PROGRAM_ID,
-            )),
-            (*bet_batch_pda, SolanaAccount::new_ref(
-                mollusk.sysvars.rent.minimum_balance(BetBatch::LEN),
-                BetBatch::LEN,
-                &PROGRAM_ID,
-            )),
-            (*global_state_pda, SolanaAccount::new_ref(
-                mollusk.sysvars.rent.minimum_balance(GlobalGameState::LEN),
-                GlobalGameState::LEN,
-                &PROGRAM_ID,
-            )),
-            (*treasury_pda, SolanaAccount::new_ref(
-                mollusk.sysvars.rent.minimum_balance(Treasury::LEN),
-                Treasury::LEN,
-                &PROGRAM_ID,
-            )),
-            (player.pubkey(), SolanaAccount::new_ref(
-                mollusk.sysvars.rent.minimum_balance(0),
-                0,
-                &system_program::ID,
-            )),
-        ],
-        &[
-            Check::success(),
-        ],
-    );
-}
-
-/// Test helper to create token accounts for testing
-pub fn create_token_accounts(
-    mollusk: &Mollusk,
-    player: &Keypair,
-    mint: &Pubkey,
-) -> (Pubkey, Pubkey) {
-    // For testing, we'll create simple PDAs
-    let (player_token_pda, _) = pubkey::find_program_address(
-        &[b"player_token", player.pubkey().as_ref()],
-        &PROGRAM_ID
-    );
-    
-    let (treasury_token_pda, _) = pubkey::find_program_address(
-        &[b"treasury_token"],
-        &PROGRAM_ID
-    );
-    
-    (player_token_pda, treasury_token_pda)
-}
-
-/// Test helper to validate account ownership
-pub fn validate_account_ownership(account: &SolanaAccount, expected_owner: &Pubkey) -> bool {
-    account.owner == *expected_owner
-}
-
-/// Test helper to validate account data length
-pub fn validate_account_data_length(account: &SolanaAccount, expected_len: usize) -> bool {
-    account.data.len() == expected_len
-}
-
-/// Test helper to create mock sysvars
-pub fn create_mock_sysvars() -> Vec<(Pubkey, SolanaAccount)> {
-    vec![
-        (
-            pinocchio::sysvars::clock::ID,
-            SolanaAccount::new_ref(
-                0,
-                std::mem::size_of::<pinocchio::sysvars::clock::Clock>(),
-                &pinocchio::sysvars::ID,
-            ),
-        ),
-        (
-            pinocchio::sysvars::rent::ID,
-            SolanaAccount::new_ref(
-                0,
-                std::mem::size_of::<pinocchio::sysvars::rent::Rent>(),
-                &pinocchio::sysvars::ID,
-            ),
-        ),
-    ]
-}
-
-/// Test helper to simulate time passage
-pub fn advance_time(mollusk: &mut Mollusk, seconds: u64) {
-    // In a real implementation, this would advance the clock
-    // For testing purposes, we'll just note the intention
-    // mollusk.advance_clock(seconds);
-}
-
-/// Test helper to create random entropy for testing
-pub fn create_test_entropy() -> [u8; 32] {
-    let mut entropy = [0u8; 32];
-    // Fill with predictable test data
-    for i in 0..32 {
-        entropy[i] = (i as u8).wrapping_mul(17).wrapping_add(42);
-    }
-    entropy
-}
-
-/// Test helper to verify bet resolution
-pub fn verify_bet_resolution(
-    bet_batch_data: &[u8],
-    bet_index: usize,
-    expected_resolved: bool,
-    expected_realizable: bool,
-) {
-    let batch = check_account_data::<BetBatch>(bet_batch_data);
-    
-    if expected_resolved {
-        assert!(batch.is_resolved(bet_index), "Bet {} should be resolved", bet_index);
-    } else {
-        assert!(!batch.is_resolved(bet_index), "Bet {} should not be resolved", bet_index);
+    #[test]
+    fn test_system_initialization() {
+        let mollusk = create_mollusk();
+        let (admin, _, rng_authority) = create_test_keypairs();
+        let (global_state_pda, treasury_pda, rng_state_pda) = derive_pdas();
+        
+        let init_data = create_instruction_data(CrapsInstruction::InitializeSystem as u8, &[]);
+        
+        let instruction = Instruction::new_with_bytes(
+            PROGRAM_ID,
+            &init_data,
+            vec![
+                AccountMeta::new(global_state_pda, false),
+                AccountMeta::new(treasury_pda, false),
+                AccountMeta::new(rng_state_pda, false),
+                AccountMeta::new(admin.pubkey(), true),
+                AccountMeta::new_readonly(pinocchio_system::ID, false),
+            ],
+        );
+        
+        mollusk.process_and_validate_instruction(
+            &instruction,
+            &vec![
+                (global_state_pda, SolanaAccount::new(
+                    mollusk.sysvars.rent.minimum_balance(GlobalGameState::LEN),
+                    GlobalGameState::LEN,
+                    &PROGRAM_ID,
+                )),
+                (treasury_pda, SolanaAccount::new(
+                    mollusk.sysvars.rent.minimum_balance(Treasury::LEN),
+                    Treasury::LEN,
+                    &PROGRAM_ID,
+                )),
+                (rng_state_pda, SolanaAccount::new(
+                    mollusk.sysvars.rent.minimum_balance(RngState::LEN),
+                    RngState::LEN,
+                    &PROGRAM_ID,
+                )),
+                (admin.pubkey(), SolanaAccount::new_ref(
+                    mollusk.sysvars.rent.minimum_balance(0),
+                    0,
+                    &system_program::ID,
+                )),
+            ],
+            &[
+                Check::success(),
+                Check::account(&global_state_pda)
+                    .owner(&PROGRAM_ID)
+                    .data_len(GlobalGameState::LEN)
+                    .build(),
+                Check::account(&treasury_pda)
+                    .owner(&PROGRAM_ID)
+                    .data_len(Treasury::LEN)
+                    .build(),
+                Check::account(&rng_state_pda)
+                    .owner(&PROGRAM_ID)
+                    .data_len(RngState::LEN)
+                    .build(),
+            ],
+        );
     }
     
-    if expected_realizable {
-        assert!(batch.is_realizable(bet_index), "Bet {} should be realizable", bet_index);
-    } else {
-        assert!(!batch.is_realizable(bet_index), "Bet {} should not be realizable", bet_index);
+    #[test]
+    fn test_player_creation() {
+        let mollusk = create_mollusk();
+        let (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda) = 
+            setup_basic_game_state(&mollusk);
+        
+        let player_pda = create_player_account(
+            &mollusk,
+            &player,
+            &global_state_pda,
+            &treasury_pda,
+            &rng_state_pda,
+        );
+        
+        // Verify player account was created correctly
+        assert_ne!(player_pda, Pubkey::default());
     }
-}
-
-/// Test helper to create a full game scenario
-pub fn create_full_game_scenario(
-    mollusk: &Mollusk,
-) -> (Keypair, Keypair, Keypair, Pubkey, Pubkey, Pubkey, Pubkey) {
-    let (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda) = 
-        setup_basic_game_state(mollusk);
     
-    let player_pda = create_player_account(
-        mollusk,
-        &player,
-        &global_state_pda,
-        &treasury_pda,
-        &rng_state_pda,
-    );
+    #[test]
+    fn test_place_pass_bet() {
+        let mollusk = create_mollusk();
+        let (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda) = 
+            setup_basic_game_state(&mollusk);
+        
+        let player_pda = create_player_account(
+            &mollusk,
+            &player,
+            &global_state_pda,
+            &treasury_pda,
+            &rng_state_pda,
+        );
+        
+        let bet_batch_pda = place_bet(
+            &mollusk,
+            &player,
+            &player_pda,
+            &global_state_pda,
+            &treasury_pda,
+            BET_PASS,
+            100,
+            None,
+        );
+        
+        // Verify bet was placed
+        assert_ne!(bet_batch_pda, Pubkey::default());
+    }
     
-    (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda, player_pda)
+    #[test]
+    fn test_dice_roll() {
+        let mollusk = create_mollusk();
+        let (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda) = 
+            setup_basic_game_state(&mollusk);
+        
+        simulate_dice_roll(&mollusk, &global_state_pda, &rng_state_pda, &rng_authority);
+        
+        // Test passes if no panic occurs
+    }
+    
+    #[test]
+    fn test_full_game_flow() {
+        let mollusk = create_mollusk();
+        let (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda) = 
+            setup_basic_game_state(&mollusk);
+        
+        // 1. Create player
+        let player_pda = create_player_account(
+            &mollusk,
+            &player,
+            &global_state_pda,
+            &treasury_pda,
+            &rng_state_pda,
+        );
+        
+        // 2. Place bet
+        let bet_batch_pda = place_bet(
+            &mollusk,
+            &player,
+            &player_pda,
+            &global_state_pda,
+            &treasury_pda,
+            BET_PASS,
+            100,
+            None,
+        );
+        
+        // 3. Roll dice
+        simulate_dice_roll(&mollusk, &global_state_pda, &rng_state_pda, &rng_authority);
+        
+        // Test passes if all steps complete without error
+    }
+    
+    #[test]
+    fn test_multiple_bet_types() {
+        let mollusk = create_mollusk();
+        let (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda) = 
+            setup_basic_game_state(&mollusk);
+        
+        let player_pda = create_player_account(
+            &mollusk,
+            &player,
+            &global_state_pda,
+            &treasury_pda,
+            &rng_state_pda,
+        );
+        
+        // Test different bet types
+        let bet_types = vec![BET_PASS, BET_DONT_PASS, BET_FIELD, BET_COME];
+        
+        for bet_type in bet_types {
+            let bet_batch_pda = place_bet(
+                &mollusk,
+                &player,
+                &player_pda,
+                &global_state_pda,
+                &treasury_pda,
+                bet_type,
+                50,
+                None,
+            );
+            
+            assert_ne!(bet_batch_pda, Pubkey::default());
+        }
+    }
+    
+    #[test]
+    fn test_error_conditions() {
+        let mollusk = create_mollusk();
+        let (admin, player, rng_authority, global_state_pda, treasury_pda, rng_state_pda) = 
+            setup_basic_game_state(&mollusk);
+        
+        // Test placing bet without player account should fail
+        let current_epoch = 1u64;
+        let (bet_batch_pda, _) = derive_bet_batch_pda(&player.pubkey(), current_epoch);
+        
+        let bet_data = vec![BET_PASS];
+        let amount_bytes = 100u64.to_le_bytes();
+        let mut full_data = bet_data;
+        full_data.extend_from_slice(&amount_bytes);
+        full_data.push(0u8); // repeater target
+        
+        let place_bet_data = create_instruction_data(
+            CrapsInstruction::PlaceBet as u8,
+            &full_data,
+        );
+        
+        let instruction = Instruction::new_with_bytes(
+            PROGRAM_ID,
+            &place_bet_data,
+            vec![
+                AccountMeta::new(Pubkey::new_unique(), false), // Wrong player PDA
+                AccountMeta::new(bet_batch_pda, false),
+                AccountMeta::new(global_state_pda, false),
+                AccountMeta::new_readonly(treasury_pda, false),
+                AccountMeta::new_readonly(pinocchio::sysvars::clock::ID, false),
+            ],
+        );
+        
+        // This should fail - we expect an error
+        let result = mollusk.process_instruction(
+            &instruction,
+            &vec![
+                (Pubkey::new_unique(), SolanaAccount::new_ref(
+                    mollusk.sysvars.rent.minimum_balance(ScalablePlayerState::LEN),
+                    ScalablePlayerState::LEN,
+                    &PROGRAM_ID,
+                )),
+                (bet_batch_pda, SolanaAccount::new(
+                    mollusk.sysvars.rent.minimum_balance(BetBatch::LEN),
+                    BetBatch::LEN,
+                    &PROGRAM_ID,
+                )),
+                (global_state_pda, SolanaAccount::new_ref(
+                    mollusk.sysvars.rent.minimum_balance(GlobalGameState::LEN),
+                    GlobalGameState::LEN,
+                    &PROGRAM_ID,
+                )),
+                (treasury_pda, SolanaAccount::new_ref(
+                    mollusk.sysvars.rent.minimum_balance(Treasury::LEN),
+                    Treasury::LEN,
+                    &PROGRAM_ID,
+                )),
+            ],
+        );
+        
+        assert!(result.program_result.is_err());
+    }
 }

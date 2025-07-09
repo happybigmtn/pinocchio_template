@@ -15,7 +15,12 @@ use pinocchio::{
 mod common;
 use common::*;
 use craps_pinocchio::*;
-use craps_pinocchio::constants::*;
+use craps_pinocchio::{
+    constants::*,
+    instructions::CrapsInstruction,
+    state::*,
+    utils::*,
+};
 
 /// Test suite for comprehensive craps-pinocchio functionality
 #[cfg(test)]

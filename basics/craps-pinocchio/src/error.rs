@@ -108,15 +108,14 @@ pub enum CrapsError {
     InvalidPlayer = 165,
     InsufficientFunds = 166,
     ActiveTournament = 167,
-    InvalidRepeaterTarget = 168,
-    InvalidPhase = 169,
-    InsufficientBlockHashes = 170,
-    MaxBlockHashesReached = 171,
-    InvalidAuthority = 172,
-    RngNotFinalized = 173,
-    InvalidAmount = 174,
-    ExceedsWithdrawalLimit = 175,
-    BatchFull = 176,
+    InvalidPhase = 168,
+    InsufficientBlockHashes = 169,
+    MaxBlockHashesReached = 170,
+    InvalidAuthority = 171,
+    RngNotFinalized = 172,
+    InvalidAmount = 173,
+    ExceedsWithdrawalLimit = 174,
+    BatchFull = 175,
 }
 
 impl From<CrapsError> for ProgramError {

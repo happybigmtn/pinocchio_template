@@ -13,7 +13,7 @@ use bytemuck::{Pod, Zeroable};
 use crate::{
     constants::*,
     error::CrapsError,
-    state::{GlobalGameState, Treasury, RngState},
+    state::{GlobalGameState, Treasury, RngState, BonusState},
 };
 
 /// Instruction data for InitializeSystem
@@ -30,11 +30,11 @@ pub fn initialize_system_handler(
     data: &[u8],
 ) -> ProgramResult {
     // Validate accounts
-    if accounts.len() < 5 {
+    if accounts.len() < 6 {
         return Err(ProgramError::NotEnoughAccountKeys);
     }
 
-    let [global_game_state, treasury, rng_state, authority, system_program] = accounts else {
+    let [global_game_state, treasury, bonus_state, rng_state, authority, system_program] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
@@ -76,6 +76,15 @@ pub fn initialize_system_handler(
         return Err(CrapsError::InvalidPDA.into());
     }
 
+    let (bonus_state_pda, bonus_state_bump) = pubkey::find_program_address(
+        &[BONUS_STATE_SEED],
+        &crate::ID,
+    );
+    if bonus_state.key() != &bonus_state_pda {
+        log!("Invalid bonus state PDA");
+        return Err(CrapsError::InvalidPDA.into());
+    }
+
     let (rng_state_pda, rng_state_bump) = pubkey::find_program_address(
         &[RNG_STATE_SEED],
         &crate::ID,
@@ -93,12 +102,14 @@ pub fn initialize_system_handler(
     // Allocate space for accounts
     let game_state_space = GlobalGameState::LEN;
     let treasury_space = Treasury::LEN;
+    let bonus_state_space = BonusState::LEN;
     let rng_state_space = RngState::LEN;
 
     // Calculate rent
     let rent = Rent::get()?;
     let game_state_rent = rent.minimum_balance(game_state_space);
     let treasury_rent = rent.minimum_balance(treasury_space);
+    let bonus_state_rent = rent.minimum_balance(bonus_state_space);
     let rng_state_rent = rent.minimum_balance(rng_state_space);
 
     // Create global game state account
@@ -124,6 +135,18 @@ pub fn initialize_system_handler(
         space: treasury_space as u64,
         owner: &crate::ID,
     }.invoke_signed(&[treasury_signer])?;
+
+    // Create bonus state account
+    let bonus_state_bump_bytes = [bonus_state_bump];
+    let bonus_state_seeds = &[Seed::from(BONUS_STATE_SEED), Seed::from(&bonus_state_bump_bytes)];
+    let bonus_state_signer = Signer::from(bonus_state_seeds);
+    CreateAccount {
+        from: authority,
+        to: bonus_state,
+        lamports: bonus_state_rent,
+        space: bonus_state_space as u64,
+        owner: &crate::ID,
+    }.invoke_signed(&[bonus_state_signer])?;
 
     // Create RNG state account
     let rng_state_bump_bytes = [rng_state_bump];
@@ -169,6 +192,13 @@ pub fn initialize_system_handler(
     treasury_state.set_last_reconciliation_slot(pinocchio::sysvars::clock::Clock::get()?.slot);
     treasury_state.set_safety_multiplier(TREASURY_SAFETY_MULTIPLIER);
     treasury_state.set_reserve_percentage(TREASURY_RESERVE_PERCENTAGE as u64);
+
+    // Initialize bonus state
+    let mut bonus_state_data = bonus_state.try_borrow_mut_data()?;
+    let bonus_data = bytemuck::from_bytes_mut::<BonusState>(&mut bonus_state_data[..]);
+    
+    // BonusState::new() sets all fields to 0, which is correct for initialization
+    *bonus_data = BonusState::new();
 
     // Initialize RNG state
     let mut rng_state_data = rng_state.try_borrow_mut_data()?;

@@ -34,6 +34,7 @@ pub fn is_hard_way(die1: u8, die2: u8) -> bool {
     die1 == die2 && die1 >= 2 && die1 <= 5
 }
 
+
 /// Check if a specific hard way was rolled
 pub fn is_specific_hard_way(die1: u8, die2: u8, target: u8) -> bool {
     die1 == die2 && calculate_roll_total(die1, die2) == target

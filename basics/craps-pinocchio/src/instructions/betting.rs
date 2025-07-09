@@ -29,10 +29,8 @@ pub struct PlaceBetData {
     pub _padding1: [u8; 7],
     /// The amount to bet
     pub bet_amount: [u8; 8],
-    /// Optional repeater target (for repeater bets)
-    pub repeater_target: u8,
     /// Padding for alignment
-    pub _padding2: [u8; 7],
+    pub _padding2: [u8; 8],
 }
 
 /// Handler for PlaceBet instruction
@@ -70,11 +68,6 @@ pub fn place_bet_handler(
     let epoch = u64::from_le_bytes(bet_data.epoch);
     let bet_kind = bet_data.bet_kind;
     let bet_amount = u64::from_le_bytes(bet_data.bet_amount);
-    let repeater_target = if bet_data.repeater_target == 0 {
-        None
-    } else {
-        Some(bet_data.repeater_target)
-    };
 
     // Validate bet type
     validate_bet_type(bet_kind)?;
@@ -82,16 +75,6 @@ pub fn place_bet_handler(
     // Validate bet amount
     validate_bet_amount(bet_amount)?;
 
-    // Validate repeater target if this is a repeater bet
-    if bet_kind >= BET_REPEATER_2 && bet_kind <= BET_REPEATER_12 {
-        if repeater_target.is_none() {
-            return Err(CrapsError::InvalidRepeaterTarget.into());
-        }
-        let target = repeater_target.unwrap();
-        if target < 2 || target > 5 {
-            return Err(CrapsError::InvalidRepeaterTarget.into());
-        }
-    }
 
     // Validate PDAs
     let game_state_pda = pubkey::find_program_address(
@@ -230,10 +213,6 @@ pub fn place_bet_handler(
     let current_total = batch.get_total_amount();
     batch.set_total_amount(current_total + bet_amount);
     
-    // Set repeater target if applicable
-    if let Some(target) = repeater_target {
-        batch.repeater_targets[bet_count] = target;
-    }
 
     // Update player balance and stats
     player_data.set_balance(current_balance - bet_amount);
@@ -247,9 +226,6 @@ pub fn place_bet_handler(
     log!("Epoch: {}", epoch);
     log!("Bet type: {}", bet_kind);
     log!("Amount: {}", bet_amount);
-    if let Some(target) = repeater_target {
-        log!("Repeater target: {}", target);
-    }
 
     Ok(())
 }

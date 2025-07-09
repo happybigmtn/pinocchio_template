@@ -5,7 +5,6 @@ use pinocchio::{
 use pinocchio_log::log;
 
 use crate::instructions::CrapsInstruction;
-use crate::processor::{create_pda::CreatePda, get_pda::GetPda};
 
 entrypoint!(process_instruction);
 
@@ -32,7 +31,7 @@ pub fn process_instruction(
             log!("Instruction: InitializeCriticalPDAs");
             crate::instructions::initialize_critical_pdas_handler(accounts, data)
         }
-        
+
         // Player Instructions
         CrapsInstruction::InitializePlayer => {
             log!("Instruction: InitializePlayer");
@@ -42,7 +41,7 @@ pub fn process_instruction(
             log!("Instruction: ClosePlayerAccount");
             crate::instructions::close_player_account_handler(accounts, data)
         }
-        
+
         // Treasury Instructions
         CrapsInstruction::DepositV2 => {
             log!("Instruction: DepositV2");
@@ -60,13 +59,13 @@ pub fn process_instruction(
             log!("Instruction: WithdrawWithAutoClaimV2");
             crate::instructions::withdraw_with_auto_claim_v2_handler(accounts, data)
         }
-        
+
         // Betting Instructions
         CrapsInstruction::PlaceBet => {
             log!("Instruction: PlaceBet");
             crate::instructions::place_bet_handler(accounts, data)
         }
-        
+
         // Game Instructions
         CrapsInstruction::SecureAutoRoll => {
             log!("Instruction: SecureAutoRoll");
@@ -84,7 +83,7 @@ pub fn process_instruction(
             log!("Instruction: StartBettingPhase");
             crate::instructions::start_betting_phase_handler(accounts, data)
         }
-        
+
         // Settlement Instructions
         CrapsInstruction::SettleRealizableBets => {
             log!("Instruction: SettleRealizableBets");
@@ -94,7 +93,7 @@ pub fn process_instruction(
             log!("Instruction: ClaimEpochPayoutsUnified");
             crate::instructions::claim_epoch_payouts_unified_handler(accounts, data)
         }
-        
+
         // Cleanup Instructions
         CrapsInstruction::CleanupBetBatch => {
             log!("Instruction: CleanupBetBatch");
@@ -108,7 +107,7 @@ pub fn process_instruction(
             log!("Instruction: CleanupOldEpochOutcome");
             crate::instructions::cleanup_old_epoch_outcome_handler(accounts, data)
         }
-        
+
         // Authority Instructions
         CrapsInstruction::UpdateAuthority => {
             log!("Instruction: UpdateAuthority");
@@ -130,7 +129,7 @@ pub fn process_instruction(
             log!("Instruction: ExecuteAuthorityTransfer");
             crate::instructions::execute_authority_transfer_handler(accounts, data)
         }
-        
+
         // Emergency Instructions
         CrapsInstruction::EmergencyShutdown => {
             log!("Instruction: EmergencyShutdown");
@@ -148,13 +147,13 @@ pub fn process_instruction(
             log!("Instruction: ResumeGame");
             crate::instructions::resume_game_handler(accounts, data)
         }
-        
+
         // RNG Instructions
         CrapsInstruction::EnableSecureRng => {
             log!("Instruction: EnableSecureRng");
             crate::instructions::enable_secure_rng_handler(accounts, data)
         }
-        
+
         // Tournament Instructions
         CrapsInstruction::UpdatePlayerTournament => {
             log!("Instruction: UpdatePlayerTournament");
@@ -164,7 +163,7 @@ pub fn process_instruction(
             log!("Instruction: ClearPlayerTournament");
             crate::instructions::clear_player_tournament_handler(accounts, data)
         }
-        
+
         // Treasury Admin Instructions
         CrapsInstruction::UpdateTreasuryAuthority => {
             log!("Instruction: UpdateTreasuryAuthority");
@@ -174,15 +173,6 @@ pub fn process_instruction(
             log!("Instruction: UpdateTreasuryParameters");
             crate::instructions::update_treasury_parameters_handler(accounts, data)
         }
-        
-        // Test Instructions (from template)
-        CrapsInstruction::CreatePda => {
-            log!("Instruction: CreatePda");
-            CreatePda::try_from((accounts, data))?.handler()
-        }
-        CrapsInstruction::GetPda => {
-            log!("Instruction: GetPda");
-            GetPda::try_from(accounts)?.handler()
-        }
+        _ => Err(ProgramError::InvalidInstructionData),
     }
 }

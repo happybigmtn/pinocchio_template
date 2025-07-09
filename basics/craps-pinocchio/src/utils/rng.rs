@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn test_rejection_sampling() {
         // Test various entropy values
-        let test_cases = vec![
+        let test_cases = [
             [5u8; 16],   // Should give 6
             [0u8; 16],   // Should give 1
             [251u8; 16], // Should give 6 (251 % 6 + 1)
