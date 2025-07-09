@@ -1,0 +1,15 @@
+#![no_std]
+#![allow(unexpected_cfgs)]
+
+pub mod constants;
+pub mod error;
+pub mod instructions;
+pub mod processor;
+pub mod state;
+pub mod utils;
+
+#[cfg(not(feature = "no-entrypoint"))]
+pub mod entrypoint;
+
+// TODO update with your program ID
+pinocchio_pubkey::declare_id!("2yxPAyKVGMz6trfp8caRMWCoY5psMq6H1r4cuynLrvoX");
