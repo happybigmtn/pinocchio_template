@@ -11,7 +11,7 @@ use pinocchio_log::log;
 use crate::{
     constants::*,
     error::CrapsError,
-    state::{GlobalGameState, ScalablePlayerState},
+    state::ScalablePlayerState,
 };
 
 /// Handler for InitializePlayer instruction
@@ -107,11 +107,8 @@ pub fn initialize_player_handler(
     player_data.set_bets_won(0);
     player_data.set_initialized_slot(pinocchio::sysvars::clock::Clock::get()?.slot);
 
-    // Update global game state player count
-    let mut game_state_data = global_game_state.try_borrow_mut_data()?;
-    let game_state = bytemuck::from_bytes_mut::<GlobalGameState>(&mut game_state_data[..]);
-    let current_players = game_state.get_total_players();
-    game_state.set_total_players(current_players + 1);
+    // Note: Player count tracking could be added as a separate field in GlobalGameState
+    // For now, players are tracked individually through their ScalablePlayerState accounts
 
     log!("Player initialized successfully");
     log!("Player: {}", player.key());

@@ -1,0 +1,46 @@
+[package]
+name = "craps-tui"
+version = "0.1.0"
+edition = "2021"
+authors = ["Professional Gambler <pro@craps.game>"]
+description = "A professional-grade craps terminal interface"
+
+[dependencies]
+# TUI Framework
+ratatui = "0.26"
+crossterm = "0.27"
+
+# Async runtime
+tokio = { version = "1.36", features = ["full"] }
+
+# Solana SDK
+solana-sdk = "1.18"
+solana-client = "1.18"
+solana-program = "1.18"
+borsh = "1.5"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Configuration
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+
+# Utilities
+chrono = "0.4"
+dirs = "5.0"
+clap = { version = "4.5", features = ["derive"] }
+
+# For professional statistics
+statrs = "0.16"
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

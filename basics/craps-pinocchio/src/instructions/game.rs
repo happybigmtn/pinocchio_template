@@ -169,6 +169,21 @@ pub fn secure_auto_roll_handler(
     // Note: Epoch is only advanced on seven-out in point phase
     log!("Secure auto roll completed for epoch {}", current_epoch);
 
+    // Emit dice rolled event
+    let clock = Clock::get()?;
+    let original_phase = current_phase;
+    let seven_out = is_seven_out(dice1, dice2) && original_phase == PHASE_POINT;
+    crate::events::emit_dice_rolled(
+        dice1,
+        dice2,
+        game_state.game_phase,
+        game_state.current_point,
+        seven_out,
+        current_epoch,
+        clock.slot,
+        clock.unix_timestamp,
+    );
+
     Ok(())
 }
 

@@ -13,10 +13,11 @@ use shank::ShankAccount;
 use crate::{
     constants::*,
     error::CrapsError,
-    state::{Treasury, ScalablePlayerState, BetBatch, BonusState},
+    state::{Treasury, ScalablePlayerState, BetBatch, BonusState, GlobalGameState},
     utils::{
         token::{validate_token_account, get_token_balance, transfer_tokens},
         bet_encoding::{decode_bet_from_batch, BetMetadata},
+        circuit_breaker::{validate_treasury_operation, TreasuryOperation},
     },
 };
 
@@ -80,7 +81,7 @@ pub fn claim_epoch_payouts_unified_handler(
     data: &[u8],
 ) -> ProgramResult {
     // Validate accounts
-    if accounts.len() < 10 {
+    if accounts.len() < 11 {
         return Err(ProgramError::NotEnoughAccountKeys);
     }
 
@@ -95,7 +96,8 @@ pub fn claim_epoch_payouts_unified_handler(
         bonus_state,
         token_program,
         mint,
-    ] = &accounts[..10] else {
+        global_game_state,
+    ] = &accounts[..11] else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
@@ -217,6 +219,17 @@ pub fn claim_epoch_payouts_unified_handler(
 
     // If there's a payout, transfer tokens
     if total_payout > 0 {
+        // Load global game state for circuit breaker
+        let game_state_data = global_game_state.try_borrow_data()?;
+        let game_state = bytemuck::from_bytes::<GlobalGameState>(&game_state_data[..]);
+        
+        // Load treasury state for circuit breaker
+        let treasury_data = treasury.try_borrow_data()?;
+        let treasury_state = bytemuck::from_bytes::<Treasury>(&treasury_data[..]);
+        
+        // Validate payout with circuit breaker
+        validate_treasury_operation(treasury_state, game_state, TreasuryOperation::Payout, total_payout)?;
+        
         // Check treasury has sufficient balance
         let treasury_token_balance = get_token_balance(treasury_token_account)?;
         if treasury_token_balance < total_payout {
@@ -283,6 +296,9 @@ pub fn claim_epoch_payouts_unified_handler(
     log!("Epoch: {}", epoch);
     log!("Total payout: {}", total_payout);
     log!("New balance: {}", new_balance);
+
+    // TODO: Add event emission for payout claimed
+    // Would need to track winning/losing bets count during payout calculation
 
     Ok(())
 }
@@ -577,13 +593,13 @@ fn evaluate_odds_dont_pass(amount: u64, dice_total: u8, phase: u8, point: u8) ->
 }
 
 /// Evaluate Odds Come bet
-fn evaluate_odds_come(amount: u64, dice_total: u8, _phase: u8, _point: u8) -> Result<u64, ProgramError> {
+fn evaluate_odds_come(_amount: u64, _dice_total: u8, _phase: u8, _point: u8) -> Result<u64, ProgramError> {
     // Simplified - would need come point tracking
     Ok(0) // Bet continues
 }
 
 /// Evaluate Odds Don't Come bet
-fn evaluate_odds_dont_come(amount: u64, dice_total: u8, _phase: u8, _point: u8) -> Result<u64, ProgramError> {
+fn evaluate_odds_dont_come(_amount: u64, _dice_total: u8, _phase: u8, _point: u8) -> Result<u64, ProgramError> {
     // Simplified - would need come point tracking
     Ok(0) // Bet continues
 }
@@ -639,7 +655,7 @@ fn evaluate_twice_hard(amount: u64, dice_total: u8, is_hard: bool, bonus: &Bonus
 }
 
 /// Evaluate Ride Line bet
-fn evaluate_ride_line(amount: u64, dice_total: u8, phase: u8, point: u8, bonus: &BonusState) -> Result<u64, ProgramError> {
+fn evaluate_ride_line(amount: u64, dice_total: u8, phase: u8, _point: u8, bonus: &BonusState) -> Result<u64, ProgramError> {
     if phase != PHASE_COME_OUT && dice_total == 7 {
         // Seven out - check pass line wins
         let payout = match bonus.ride_line_streak {
@@ -661,7 +677,7 @@ fn evaluate_ride_line(amount: u64, dice_total: u8, phase: u8, point: u8, bonus: 
 }
 
 /// Evaluate Muggsy's Corner bet
-fn evaluate_muggsy(amount: u64, dice_total: u8, phase: u8, point: u8) -> Result<u64, ProgramError> {
+fn evaluate_muggsy(amount: u64, dice_total: u8, phase: u8, _point: u8) -> Result<u64, ProgramError> {
     if phase == PHASE_COME_OUT && dice_total == 7 {
         Ok(amount * 3) // 2:1 payout on come-out 7
     } else if phase != PHASE_COME_OUT && dice_total == 7 {

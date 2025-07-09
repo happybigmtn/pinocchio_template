@@ -13,7 +13,7 @@ use bytemuck::{Pod, Zeroable};
 use crate::{
     constants::*,
     error::CrapsError,
-    state::{GlobalGameState, Treasury, RngState, BonusState},
+    state::{GlobalGameState, Treasury, RngState, BonusState, RngPhase},
 };
 
 /// Instruction data for InitializeSystem
@@ -168,16 +168,17 @@ pub fn initialize_system_handler(
     game_state.rng_authority = rng_authority;
     game_state.set_current_epoch(0);
     game_state.set_current_phase(PHASE_COME_OUT);
-    game_state.set_total_players(0);
-    game_state.set_total_games_played(0);
-    game_state.set_total_deposited(0);
-    game_state.set_total_wagered(0);
-    game_state.set_total_paid_out(0);
-    game_state.set_last_updated_slot(pinocchio::sysvars::clock::Clock::get()?.slot);
+    game_state.set_total_active_bets(0); // Initialize active bets counter
+    game_state.set_next_roll_slot(pinocchio::sysvars::clock::Clock::get()?.slot);
     game_state.set_secure_rng_enabled(false);
     game_state.set_is_paused(false);
-    game_state.set_is_emergency_shutdown(false);
-    game_state.set_auto_roll_enabled(true);
+    game_state.crap_token_mint = [0; 32]; // Will be set later when token is created
+    game_state.treasury = treasury.key().as_ref().try_into().unwrap();
+    game_state.bump = game_state_bump;
+    game_state.current_dice = 0;
+    game_state.current_die1 = 0;
+    game_state.current_die2 = 0;
+    game_state.current_point = 0;
 
     // Initialize treasury
     let mut treasury_data = treasury.try_borrow_mut_data()?;
@@ -205,15 +206,14 @@ pub fn initialize_system_handler(
     let rng_data = bytemuck::from_bytes_mut::<RngState>(&mut rng_state_data[..]);
     
     rng_data.set_epoch(0);
-    rng_data.set_rng_phase(0); // Idle
+    rng_data.set_phase(RngPhase::Betting); // Initial phase
     rng_data.set_collection_start_slot(0);
-    rng_data.set_hash_count(0);
-    rng_data.set_last_finalized_epoch(0);
-    rng_data.set_last_update_slot(pinocchio::sysvars::clock::Clock::get()?.slot);
-    rng_data.set_total_collections(0);
-    rng_data.set_successful_finalizations(0);
-    rng_data.set_failed_finalizations(0);
-    rng_data.set_is_active(true);
+    rng_data.set_betting_start_slot(0);
+    rng_data.set_finalization_slot(0);
+    rng_data.set_final_value(0);
+    rng_data.hash_count = 0;
+    rng_data.block_hashes = [0; 320]; // Initialize empty block hashes
+    rng_data.bump = rng_state_bump;
 
     log!("System initialized successfully");
     log!("Authority: {}", authority.key());

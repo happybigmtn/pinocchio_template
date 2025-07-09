@@ -201,9 +201,9 @@ pub fn place_bet_handler(
         return Err(CrapsError::BatchFull.into());
     }
 
-    // Add bet to batch using packed format
-    // Pack bet data: kind (6 bits) + amount_index (10 bits) = 16 bits
-    let packed_bet = ((bet_kind as u16) & 0x3F) | (((bet_amount as u16) & 0x3FF) << 6);
+    // Add bet to batch using proper encoding
+    // Use the encode_bet utility function to properly encode the bet
+    let packed_bet = crate::utils::bet_encoding::encode_bet(bet_kind, bet_amount)?;
     batch.set_packed_bet(bet_count, packed_bet);
     
     // Update bet count
@@ -226,6 +226,18 @@ pub fn place_bet_handler(
     log!("Epoch: {}", epoch);
     log!("Bet type: {}", bet_kind);
     log!("Amount: {}", bet_amount);
+
+    // Emit bet placed event
+    let clock = Clock::get()?;
+    crate::events::emit_bet_placed(
+        player.key(),
+        bet_kind,
+        bet_amount,
+        batch_index as u16,
+        epoch,
+        clock.slot,
+        clock.unix_timestamp,
+    );
 
     Ok(())
 }

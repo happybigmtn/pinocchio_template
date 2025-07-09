@@ -21,6 +21,7 @@ pinocchio-token = { workspace = true }
 pinocchio-helper = { path = "../../pinocchio-helper" }
 bytemuck = { workspace = true }
 shank = { workspace = true }
+bs58 = "0.4"
 
 [dev-dependencies]
 mollusk-svm = { workspace = true }

@@ -122,40 +122,10 @@ impl RngState {
         self.hash_count = count;
     }
 
-    pub fn set_last_finalized_epoch(&mut self, epoch: u64) {
-        // Since there's no last_finalized_epoch field, we'll use epoch for now
-        // In production, you might want to add a separate field
-        self.set_epoch(epoch);
-    }
-
-    pub fn set_last_update_slot(&mut self, slot: u64) {
-        // Use finalization_slot as the closest match
-        self.set_finalization_slot(slot);
-    }
-
-    pub fn set_total_collections(&mut self, _count: u64) {
-        // Since there's no total_collections field, we'll implement as no-op for now
-        // In production, you might want to add a separate field
-    }
-
-    pub fn set_successful_finalizations(&mut self, _count: u64) {
-        // Since there's no successful_finalizations field, we'll implement as no-op for now
-        // In production, you might want to add a separate field
-    }
-
-    pub fn set_failed_finalizations(&mut self, _count: u64) {
-        // Since there's no failed_finalizations field, we'll implement as no-op for now
-        // In production, you might want to add a separate field
-    }
-
-    pub fn set_is_active(&mut self, _active: bool) {
-        // Since there's no is_active field, we'll implement as no-op for now
-        // In production, you might want to add a separate field
-    }
 
     // Helper methods
     pub fn is_collection_complete(&self) -> bool {
-        self.hash_count >= 5 || self.get_phase() == RngPhase::Finalized
+        self.hash_count >= 10 || self.get_phase() == RngPhase::Finalized
     }
 
     pub fn is_finalized(&self) -> bool {
@@ -177,7 +147,7 @@ impl RngState {
         self.hash_count += 1;
 
         // Check if we have enough hashes
-        if self.hash_count >= 5 {
+        if self.hash_count >= 10 {
             self.set_phase(RngPhase::Finalized);
             return true;
         }

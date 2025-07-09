@@ -64,6 +64,19 @@ pub fn emergency_shutdown_handler(
 
     log!("EmergencyShutdown: Emergency shutdown activated at slot {}", current_slot);
 
+    // Emit emergency action event
+    let clock = Clock::get()?;
+    let current_epoch = game_state.get_game_epoch();
+    crate::events::emit_emergency_action(
+        emergency_authority_account.key(),
+        0, // Shutdown action
+        0, // Previous state (not paused)
+        1, // New state (paused)
+        current_epoch,
+        clock.slot,
+        clock.unix_timestamp,
+    );
+
     Ok(())
 }
 
@@ -116,6 +129,19 @@ pub fn resume_operations_handler(
     game_state.set_next_roll_slot(current_slot + SLOTS_PER_ROLL);
 
     log!("ResumeOperations: Normal operations resumed at slot {}", current_slot);
+
+    // Emit emergency action event
+    let clock = Clock::get()?;
+    let current_epoch = game_state.get_game_epoch();
+    crate::events::emit_emergency_action(
+        emergency_authority_account.key(),
+        1, // Resume operations action
+        1, // Previous state (paused)
+        0, // New state (not paused)
+        current_epoch,
+        clock.slot,
+        clock.unix_timestamp,
+    );
 
     Ok(())
 }
@@ -177,6 +203,19 @@ pub fn emergency_pause_handler(
         log!("EmergencyPause: Game paused indefinitely");
     }
 
+    // Emit emergency action event
+    let clock = Clock::get()?;
+    let current_epoch = game_state.get_game_epoch();
+    crate::events::emit_emergency_action(
+        emergency_authority_account.key(),
+        2, // Emergency pause action
+        0, // Previous state (not paused)
+        1, // New state (paused)
+        current_epoch,
+        clock.slot,
+        clock.unix_timestamp,
+    );
+
     Ok(())
 }
 
@@ -229,6 +268,19 @@ pub fn resume_game_handler(
     game_state.set_next_roll_slot(current_slot + SLOTS_PER_ROLL);
 
     log!("ResumeGame: Game resumed at slot {}", current_slot);
+
+    // Emit emergency action event
+    let clock = Clock::get()?;
+    let current_epoch = game_state.get_game_epoch();
+    crate::events::emit_emergency_action(
+        authority_account.key(),
+        3, // Resume game action
+        1, // Previous state (paused)
+        0, // New state (not paused)
+        current_epoch,
+        clock.slot,
+        clock.unix_timestamp,
+    );
 
     Ok(())
 }

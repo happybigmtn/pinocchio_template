@@ -1,6 +1,7 @@
 //! Utility modules for craps-pinocchio
 
 pub mod bet_encoding;
+pub mod circuit_breaker;
 pub mod dice;
 pub mod rng;
 pub mod token;
@@ -10,6 +11,10 @@ pub mod validation;
 mod test_encoding;
 
 pub use bet_encoding::*;
+// Export circuit breaker functions
+pub use circuit_breaker::{
+    CircuitBreakerState, TreasuryOperation, validate_treasury_operation
+};
 // Export dice functions with explicit naming to avoid conflicts
 pub use dice::{
     calculate_roll_total, get_roll_type, is_valid_point_roll, is_point_made, is_seven_out

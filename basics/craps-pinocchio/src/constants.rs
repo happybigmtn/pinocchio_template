@@ -124,10 +124,10 @@ pub const DAILY_CLAIM_SLOTS: u64 = 172_800; // 24 hours worth of slots
 pub const MAX_AUTO_CLAIM_LOOKBACK: u64 = 50; // Look back up to 50 epochs for auto-claims
 
 // ===== RNG CONSTANTS =====
-pub const MAX_BLOCK_HASHES: u8 = 10;
+pub const MAX_BLOCK_HASHES: u8 = 15;  // Increased from 10 to allow buffer
 pub const AUTO_ROLL_INTERVAL: u64 = 50; // ~20-25 seconds with 0.4-0.5s slots
 pub const BETTING_WINDOW_SLOTS: u64 = 40;
-pub const REQUIRED_BLOCK_HASHES: u8 = 5;
+pub const REQUIRED_BLOCK_HASHES: u8 = 10;  // Increased from 5 to 10 for better security
 pub const SLOTS_PER_ROLL: u64 = 60; // Time between dice rolls
 
 // ===== TREASURY CONSTANTS =====
@@ -135,6 +135,16 @@ pub const TREASURY_SAFETY_MULTIPLIER: u64 = 2;
 pub const MIN_TREASURY_BALANCE: u64 = 100_000_000_000; // 100 tokens
 pub const TREASURY_RESERVE_PERCENTAGE: u8 = 5;
 pub const HOUSE_COMMISSION_BPS: u16 = 250; // 2.5% = 250 basis points
+
+// ===== CIRCUIT BREAKER CONSTANTS =====
+pub const MAX_PAYOUT_RATIO: u8 = 80; // Max 80% of treasury can be paid out
+pub const MAX_SINGLE_PAYOUT: u64 = 50_000_000_000_000; // 50k tokens max single payout
+pub const MAX_HOURLY_PAYOUTS: u64 = 500_000_000_000_000; // 500k tokens max hourly payouts
+pub const MAX_DEPOSITS_PER_HOUR: u64 = 1_000_000_000_000_000; // 1M tokens max hourly deposits
+pub const MAX_WITHDRAWALS_PER_HOUR: u64 = 200_000_000_000_000; // 200k tokens max hourly withdrawals
+pub const HOURLY_SLOTS: u64 = 7200; // 1 hour = 3600 seconds / 0.5s per slot
+pub const EMERGENCY_RESERVE_RATIO: u8 = 20; // 20% of treasury reserved for emergencies
+pub const LIQUIDITY_THRESHOLD: u8 = 90; // Trigger warnings at 90% treasury utilization
 
 // ===== BATCH CONSTANTS =====
 pub const MAX_BETS_PER_BATCH: usize = 16;

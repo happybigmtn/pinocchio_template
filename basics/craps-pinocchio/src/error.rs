@@ -127,6 +127,16 @@ pub enum CrapsError {
     AlreadyInTournament = 184,
     InvalidTournament = 185,
     NotYetImplemented = 186,
+    
+    // Circuit breaker errors
+    CircuitBreakerTripped = 187,
+    PayoutRatioExceeded = 188,
+    SinglePayoutTooLarge = 189,
+    HourlyPayoutLimitExceeded = 190,
+    HourlyDepositLimitExceeded = 191,
+    HourlyWithdrawalLimitExceeded = 192,
+    LiquidityThresholdExceeded = 193,
+    EmergencyReserveInsufficient = 194,
 }
 
 impl From<CrapsError> for ProgramError {

@@ -142,51 +142,13 @@ impl GlobalGameState {
         self.get_game_epoch()
     }
 
-    // Missing setter methods that the initialize.rs is looking for
+    // Convenience setter methods
     pub fn set_current_epoch(&mut self, value: u64) {
         self.set_game_epoch(value);
     }
 
     pub fn set_current_phase(&mut self, value: u8) {
         self.game_phase = value;
-    }
-
-    pub fn set_total_players(&mut self, value: u64) {
-        // Since there's no total_players field, we'll use total_active_bets for now
-        // In production, you might want to add a separate field
-        self.set_total_active_bets(value);
-    }
-
-    pub fn get_total_players(&self) -> u64 {
-        // Since there's no total_players field, we'll use total_active_bets for now
-        // In production, you might want to add a separate field
-        self.get_total_active_bets()
-    }
-
-    pub fn set_total_games_played(&mut self, value: u64) {
-        // Since there's no total_games_played field, we'll use game_epoch for now
-        // In production, you might want to add a separate field
-        self.set_game_epoch(value);
-    }
-
-    pub fn set_total_deposited(&mut self, _value: u64) {
-        // Since there's no total_deposited field, we'll implement as no-op for now
-        // In production, you might want to add a separate field
-    }
-
-    pub fn set_total_wagered(&mut self, _value: u64) {
-        // Since there's no total_wagered field, we'll implement as no-op for now
-        // In production, you might want to add a separate field
-    }
-
-    pub fn set_total_paid_out(&mut self, _value: u64) {
-        // Since there's no total_paid_out field, we'll implement as no-op for now
-        // In production, you might want to add a separate field
-    }
-
-    pub fn set_last_updated_slot(&mut self, value: u64) {
-        // Using next_roll_slot as the closest match
-        self.set_next_roll_slot(value);
     }
 
     pub fn set_secure_rng_enabled(&mut self, value: bool) {
@@ -196,14 +158,12 @@ impl GlobalGameState {
     pub fn set_is_paused(&mut self, value: bool) {
         self.paused = if value { 1 } else { 0 };
     }
-
-    pub fn set_is_emergency_shutdown(&mut self, _value: bool) {
-        // Since there's no emergency_shutdown field, we'll implement as no-op for now
-        // In production, you might want to add a separate field
+    
+    pub fn get_current_phase(&self) -> u8 {
+        self.game_phase
     }
-
-    pub fn set_auto_roll_enabled(&mut self, _value: bool) {
-        // Since there's no auto_roll_enabled field, we'll implement as no-op for now
-        // In production, you might want to add a separate field
+    
+    pub fn get_point(&self) -> u8 {
+        self.current_point
     }
 }

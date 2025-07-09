@@ -183,20 +183,20 @@ mod tests {
 
     #[test]
     fn test_mix_entropy() {
-        let mut hashes = [[0u8; 32]; 5];
+        let mut hashes = [[0u8; 32]; 15]; // Support up to 15 hashes
         // Create some test hashes
-        for i in 0..5 {
+        for i in 0..10 {
             hashes[i][0] = i as u8;
             hashes[i][1] = (i * 2) as u8;
         }
         
-        let result = mix_entropy(&hashes, 5);
+        let result = mix_entropy(&hashes, 10); // Use required 10 hashes
         assert!(result.is_ok());
         
         // Verify the mixed entropy is different from any single hash
         let mixed = result.unwrap();
-        for hash in &hashes {
-            assert_ne!(&mixed, hash);
+        for i in 0..10 {
+            assert_ne!(&mixed, &hashes[i]);
         }
     }
 

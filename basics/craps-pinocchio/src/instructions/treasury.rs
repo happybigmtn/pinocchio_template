@@ -2,6 +2,7 @@ use pinocchio::{
     account_info::AccountInfo,
     program_error::ProgramError,
     pubkey::{self},
+    sysvars::{clock::Clock, Sysvar},
     ProgramResult,
 };
 use pinocchio_log::log;
@@ -10,10 +11,11 @@ use bytemuck::{Pod, Zeroable};
 use crate::{
     constants::*,
     error::CrapsError,
-    state::{Treasury, ScalablePlayerState},
+    state::{Treasury, ScalablePlayerState, GlobalGameState},
     utils::{
         validation::validate_deposit_amount,
         token::{validate_token_account, get_token_balance, transfer_tokens},
+        circuit_breaker::{validate_treasury_operation, TreasuryOperation},
     },
 };
 
@@ -31,11 +33,11 @@ pub fn deposit_v2_handler(
     data: &[u8],
 ) -> ProgramResult {
     // Validate accounts
-    if accounts.len() < 7 {
+    if accounts.len() < 8 {
         return Err(ProgramError::NotEnoughAccountKeys);
     }
 
-    let [treasury, player_state, player_token_account, treasury_token_account, player, token_program, mint] = accounts else {
+    let [treasury, player_state, player_token_account, treasury_token_account, player, token_program, mint, global_game_state] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
@@ -60,6 +62,10 @@ pub fn deposit_v2_handler(
 
     // Validate amount
     validate_deposit_amount(amount)?;
+
+    // Load global game state for circuit breaker
+    let game_state_data = global_game_state.try_borrow_data()?;
+    let game_state = bytemuck::from_bytes::<GlobalGameState>(&game_state_data[..]);
 
     // Validate PDAs
     let (treasury_pda, _) = pubkey::find_program_address(
@@ -87,6 +93,13 @@ pub fn deposit_v2_handler(
     if player_token_balance < amount {
         return Err(CrapsError::InsufficientFunds.into());
     }
+
+    // Load and validate treasury state for circuit breaker
+    let treasury_data = treasury.try_borrow_data()?;
+    let treasury_state = bytemuck::from_bytes::<Treasury>(&treasury_data[..]);
+    
+    // Validate deposit with circuit breaker
+    validate_treasury_operation(treasury_state, game_state, TreasuryOperation::Deposit, amount)?;
 
     // Perform the token transfer from player to treasury
     transfer_tokens(
@@ -138,6 +151,19 @@ pub fn deposit_v2_handler(
     log!("Amount: {}", amount);
     log!("New balance: {}", new_balance);
 
+    // Emit deposit event
+    let clock = Clock::get()?;
+    let current_epoch = player_data.get_current_epoch();
+    crate::events::emit_deposit(
+        player.key(),
+        amount,
+        new_balance,
+        false, // Regular deposit, not auto-claimed
+        current_epoch,
+        clock.slot,
+        clock.unix_timestamp,
+    );
+
     Ok(())
 }
 
@@ -147,11 +173,11 @@ pub fn withdraw_v2_handler(
     data: &[u8],
 ) -> ProgramResult {
     // Validate accounts
-    if accounts.len() < 8 {
+    if accounts.len() < 9 {
         return Err(ProgramError::NotEnoughAccountKeys);
     }
 
-    let [treasury, player_state, treasury_token_account, player_token_account, player, treasury_authority, token_program, mint] = accounts else {
+    let [treasury, player_state, treasury_token_account, player_token_account, player, treasury_authority, token_program, mint, global_game_state] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
@@ -208,6 +234,10 @@ pub fn withdraw_v2_handler(
     validate_token_account(treasury_token_account, &treasury_pda, mint.key())?;
     validate_token_account(player_token_account, player.key(), mint.key())?;
 
+    // Load global game state for circuit breaker
+    let game_state_data = global_game_state.try_borrow_data()?;
+    let game_state = bytemuck::from_bytes::<GlobalGameState>(&game_state_data[..]);
+
     // Load and update player state
     let mut player_state_data = player_state.try_borrow_mut_data()?;
     let player_data = bytemuck::from_bytes_mut::<ScalablePlayerState>(&mut player_state_data[..]);
@@ -227,6 +257,9 @@ pub fn withdraw_v2_handler(
     // Load and update treasury
     let mut treasury_data = treasury.try_borrow_mut_data()?;
     let treasury_state = bytemuck::from_bytes_mut::<Treasury>(&mut treasury_data[..]);
+    
+    // Validate withdrawal with circuit breaker
+    validate_treasury_operation(treasury_state, game_state, TreasuryOperation::Withdrawal, amount)?;
     
     // Check treasury balance
     let total_deposits = treasury_state.get_total_deposits();
@@ -274,6 +307,21 @@ pub fn withdraw_v2_handler(
     log!("Player: {}", player.key());
     log!("Amount: {}", amount);
     log!("New balance: {}", new_balance);
+
+    // Emit withdrawal event
+    let clock = Clock::get()?;
+    let game_state_data = player_state.try_borrow_data()?;
+    let player_data = bytemuck::from_bytes::<ScalablePlayerState>(&game_state_data[..]);
+    let current_epoch = player_data.get_current_epoch();
+    crate::events::emit_withdrawal(
+        player.key(),
+        amount,
+        new_balance,
+        false, // Regular withdrawal, not auto-claimed
+        current_epoch,
+        clock.slot,
+        clock.unix_timestamp,
+    );
 
     Ok(())
 }
