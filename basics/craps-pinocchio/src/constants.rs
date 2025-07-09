@@ -128,6 +128,7 @@ pub const MAX_BLOCK_HASHES: u8 = 10;
 pub const AUTO_ROLL_INTERVAL: u64 = 50; // ~20-25 seconds with 0.4-0.5s slots
 pub const BETTING_WINDOW_SLOTS: u64 = 40;
 pub const REQUIRED_BLOCK_HASHES: u8 = 5;
+pub const SLOTS_PER_ROLL: u64 = 60; // Time between dice rolls
 
 // ===== TREASURY CONSTANTS =====
 pub const TREASURY_SAFETY_MULTIPLIER: u64 = 2;

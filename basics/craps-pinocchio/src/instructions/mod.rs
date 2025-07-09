@@ -1,22 +1,34 @@
 use shank::ShankInstruction;
 
 // Re-export instruction handlers
+pub mod authority;
 pub mod betting;
 pub mod claim;
+pub mod cleanup;
+pub mod emergency;
 pub mod game;
 pub mod initialize;
 pub mod player;
+pub mod rng;
+pub mod settlement;
+pub mod tournament;
 pub mod treasury;
-pub mod stubs;
+pub mod treasury_admin;
 
 // Re-export all handler functions
+pub use authority::*;
 pub use betting::*;
 pub use claim::*;
+pub use cleanup::*;
+pub use emergency::*;
 pub use game::*;
 pub use initialize::*;
 pub use player::*;
+pub use rng::*;
+pub use settlement::*;
+pub use tournament::*;
 pub use treasury::*;
-pub use stubs::*;
+pub use treasury_admin::*;
 
 /// All instructions supported by the craps-pinocchio program
 #[repr(u8)]
@@ -242,13 +254,6 @@ pub enum CrapsInstruction {
     #[account(1, name = "global_game_state", desc = "Global game state account")]
     #[account(2, signer, name = "admin", desc = "Admin authority")]
     UpdateTreasuryParameters = 31,
-
-    // ===== Test Instructions (from template) =====
-    /// Create a PDA (test instruction)
-    CreatePda = 32,
-
-    /// Get a PDA (test instruction)
-    GetPda = 33,
 }
 
 impl TryFrom<&u8> for CrapsInstruction {
@@ -288,8 +293,6 @@ impl TryFrom<&u8> for CrapsInstruction {
             29 => Ok(CrapsInstruction::ClearPlayerTournament),
             30 => Ok(CrapsInstruction::UpdateTreasuryAuthority),
             31 => Ok(CrapsInstruction::UpdateTreasuryParameters),
-            32 => Ok(CrapsInstruction::CreatePda),
-            33 => Ok(CrapsInstruction::GetPda),
             _ => Err(pinocchio::program_error::ProgramError::InvalidInstructionData),
         }
     }

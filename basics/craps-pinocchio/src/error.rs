@@ -116,6 +116,17 @@ pub enum CrapsError {
     InvalidAmount = 173,
     ExceedsWithdrawalLimit = 174,
     BatchFull = 175,
+    UnauthorizedPlayer = 176,
+    UnauthorizedAuthority = 177,
+    EpochMismatch = 178,
+    BetsNotSettled = 179,
+    EpochNotFinalized = 180,
+    InvalidEpochRange = 181,
+    TooManyEpochsToSettle = 182,
+    EpochTooRecent = 183,
+    AlreadyInTournament = 184,
+    InvalidTournament = 185,
+    NotYetImplemented = 186,
 }
 
 impl From<CrapsError> for ProgramError {

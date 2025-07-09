@@ -101,7 +101,8 @@ pub fn process_instruction(
         }
         CrapsInstruction::CleanupOldBetBatch => {
             log!("Instruction: CleanupOldBetBatch");
-            crate::instructions::cleanup_old_bet_batch_handler(accounts, data)
+            // This is duplicative - just call the same handler as CleanupBetBatch
+            crate::instructions::cleanup_bet_batch_handler(accounts, data)
         }
         CrapsInstruction::CleanupOldEpochOutcome => {
             log!("Instruction: CleanupOldEpochOutcome");
@@ -173,6 +174,5 @@ pub fn process_instruction(
             log!("Instruction: UpdateTreasuryParameters");
             crate::instructions::update_treasury_parameters_handler(accounts, data)
         }
-        _ => Err(ProgramError::InvalidInstructionData),
     }
 }
