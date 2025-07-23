@@ -1,28 +1,13 @@
 [workspace]
 resolver = "2"
 members = [
-  "basics/*", 
+  "basics/*",
   "pinocchio-helper",
+  "tokens/*",
+]
+exclude = [
   "templates/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
-  "basics/*",
+  "basics/craps-pinocchio/frontend",
 ]
 
 [workspace.package]

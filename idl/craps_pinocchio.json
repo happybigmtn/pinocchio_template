@@ -1,0 +1,2078 @@
+{
+  "version": "0.1.0",
+  "name": "craps_pinocchio",
+  "instructions": [
+    {
+      "name": "InitializeSystem",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "bonusState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Bonus state account"
+          ]
+        },
+        {
+          "name": "rngState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "RNG state account"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "System authority"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "System program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 0
+      }
+    },
+    {
+      "name": "InitializeCriticalPDAs",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "rngState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "RNG state account"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "System authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 1
+      }
+    },
+    {
+      "name": "InitializePlayer",
+      "accounts": [
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": true,
+          "docs": [
+            "Player account"
+          ]
+        },
+        {
+          "name": "globalGameState",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "System program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 2
+      }
+    },
+    {
+      "name": "ClosePlayerAccount",
+      "accounts": [
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account to close"
+          ]
+        },
+        {
+          "name": "player",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Player account"
+          ]
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Account to receive rent"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 3
+      }
+    },
+    {
+      "name": "DepositV2",
+      "accounts": [
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "playerTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player's token account"
+          ]
+        },
+        {
+          "name": "treasuryTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury's token account"
+          ]
+        },
+        {
+          "name": "player",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Player account"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 4
+      }
+    },
+    {
+      "name": "WithdrawV2",
+      "accounts": [
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "treasuryTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury's token account"
+          ]
+        },
+        {
+          "name": "playerTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player's token account"
+          ]
+        },
+        {
+          "name": "player",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Player account"
+          ]
+        },
+        {
+          "name": "treasuryAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Treasury authority"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 5
+      }
+    },
+    {
+      "name": "DepositWithAutoClaimV2",
+      "accounts": [
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "playerTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player's token account"
+          ]
+        },
+        {
+          "name": "treasuryTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury's token account"
+          ]
+        },
+        {
+          "name": "player",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Player account"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 6
+      }
+    },
+    {
+      "name": "WithdrawWithAutoClaimV2",
+      "accounts": [
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "treasuryTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury's token account"
+          ]
+        },
+        {
+          "name": "playerTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player's token account"
+          ]
+        },
+        {
+          "name": "player",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Player account"
+          ]
+        },
+        {
+          "name": "treasuryAuthority",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Treasury authority"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 7
+      }
+    },
+    {
+      "name": "PlaceBet",
+      "accounts": [
+        {
+          "name": "betBatch",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Bet batch account"
+          ]
+        },
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "globalGameState",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "player",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Player account"
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "System program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 8
+      }
+    },
+    {
+      "name": "SecureAutoRoll",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "bonusState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Bonus state account"
+          ]
+        },
+        {
+          "name": "rngState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "RNG state account"
+          ]
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "rngAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "RNG authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 9
+      }
+    },
+    {
+      "name": "CollectBlockHash",
+      "accounts": [
+        {
+          "name": "rngState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "RNG state account"
+          ]
+        },
+        {
+          "name": "globalGameState",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "rngAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "RNG authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 10
+      }
+    },
+    {
+      "name": "FinalizeRng",
+      "accounts": [
+        {
+          "name": "rngState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "RNG state account"
+          ]
+        },
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "rngAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "RNG authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 11
+      }
+    },
+    {
+      "name": "StartBettingPhase",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "rngState",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "RNG state account"
+          ]
+        },
+        {
+          "name": "rngAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "RNG authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 12
+      }
+    },
+    {
+      "name": "SettleRealizableBets",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Authority account"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 13
+      }
+    },
+    {
+      "name": "ClaimEpochPayoutsUnified",
+      "accounts": [
+        {
+          "name": "player",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Player account"
+          ]
+        },
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "treasuryTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury token account"
+          ]
+        },
+        {
+          "name": "playerTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player token account"
+          ]
+        },
+        {
+          "name": "epochOutcome",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Epoch outcome account"
+          ]
+        },
+        {
+          "name": "betBatch",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Bet batch account"
+          ]
+        },
+        {
+          "name": "bonusState",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Bonus state account"
+          ]
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token program"
+          ]
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Token mint"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 14
+      }
+    },
+    {
+      "name": "CleanupBetBatch",
+      "accounts": [
+        {
+          "name": "betBatch",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Bet batch account to clean"
+          ]
+        },
+        {
+          "name": "playerState",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "player",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Player account"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 15
+      }
+    },
+    {
+      "name": "CleanupOldBetBatch",
+      "accounts": [
+        {
+          "name": "betBatch",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Bet batch account to clean"
+          ]
+        },
+        {
+          "name": "globalGameState",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Admin authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 16
+      }
+    },
+    {
+      "name": "CleanupOldEpochOutcome",
+      "accounts": [
+        {
+          "name": "epochOutcome",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Epoch outcome to clean"
+          ]
+        },
+        {
+          "name": "globalGameState",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Admin authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 17
+      }
+    },
+    {
+      "name": "UpdateAuthority",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "currentAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 18
+      }
+    },
+    {
+      "name": "UpdateRngAuthority",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "currentAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 19
+      }
+    },
+    {
+      "name": "UpdateAdminAuthority",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "currentAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 20
+      }
+    },
+    {
+      "name": "UpdateEmergencyAuthority",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "currentAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 21
+      }
+    },
+    {
+      "name": "ExecuteAuthorityTransfer",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "newAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "New authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 22
+      }
+    },
+    {
+      "name": "EmergencyShutdown",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "emergencyAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Emergency authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 23
+      }
+    },
+    {
+      "name": "ResumeOperations",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "emergencyAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Emergency authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 24
+      }
+    },
+    {
+      "name": "EmergencyPause",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "emergencyAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Emergency authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 25
+      }
+    },
+    {
+      "name": "ResumeGame",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Authority account"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 26
+      }
+    },
+    {
+      "name": "EnableSecureRng",
+      "accounts": [
+        {
+          "name": "globalGameState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Authority account"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 27
+      }
+    },
+    {
+      "name": "UpdatePlayerTournament",
+      "accounts": [
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "tournamentProgram",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Tournament program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 28
+      }
+    },
+    {
+      "name": "ClearPlayerTournament",
+      "accounts": [
+        {
+          "name": "playerState",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Player state account"
+          ]
+        },
+        {
+          "name": "tournamentProgram",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Tournament program"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 29
+      }
+    },
+    {
+      "name": "UpdateTreasuryAuthority",
+      "accounts": [
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "currentAuthority",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Current authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 30
+      }
+    },
+    {
+      "name": "UpdateTreasuryParameters",
+      "accounts": [
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false,
+          "docs": [
+            "Treasury account"
+          ]
+        },
+        {
+          "name": "globalGameState",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "Global game state account"
+          ]
+        },
+        {
+          "name": "admin",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "Admin authority"
+          ]
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 31
+      }
+    }
+  ],
+  "accounts": [
+    {
+      "name": "EpochOutcome",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "epoch",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "dice",
+            "type": {
+              "array": [
+                "u8",
+                2
+              ]
+            }
+          },
+          {
+            "name": "phase",
+            "type": "u8"
+          },
+          {
+            "name": "point",
+            "type": "u8"
+          },
+          {
+            "name": "resolved",
+            "type": "u8"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": [
+                "u8",
+                3
+              ]
+            }
+          },
+          {
+            "name": "totalPayouts",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "finalizedSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Favorites",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "number",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "color",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "hobby1",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "hobby2",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "hobby3",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "hobby4",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "hobby5",
+            "type": {
+              "array": [
+                "u8",
+                50
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BetBatch",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "epoch",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "player",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "betCount",
+            "type": "u8"
+          },
+          {
+            "name": "padding1",
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          },
+          {
+            "name": "totalAmount",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "packedBets",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "resolvedMask",
+            "type": {
+              "array": [
+                "u8",
+                2
+              ]
+            }
+          },
+          {
+            "name": "realizableMask",
+            "type": {
+              "array": [
+                "u8",
+                2
+              ]
+            }
+          },
+          {
+            "name": "settledMask",
+            "type": {
+              "array": [
+                "u8",
+                2
+              ]
+            }
+          },
+          {
+            "name": "winningMask",
+            "type": {
+              "array": [
+                "u8",
+                2
+              ]
+            }
+          },
+          {
+            "name": "payoutTotal",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "individualPayouts",
+            "type": {
+              "array": [
+                "u8",
+                128
+              ]
+            }
+          },
+          {
+            "name": "comePoints",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "linkedBets",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "cachedOutcomes",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "cacheEpoch",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "padding2",
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BonusState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "smallRolled",
+            "type": "u8"
+          },
+          {
+            "name": "tallRolled",
+            "type": "u8"
+          },
+          {
+            "name": "doublesRolled",
+            "type": "u8"
+          },
+          {
+            "name": "firePoints",
+            "type": "u8"
+          },
+          {
+            "name": "hotRollerCount",
+            "type": "u8"
+          },
+          {
+            "name": "rideLineStreak",
+            "type": "u8"
+          },
+          {
+            "name": "hits",
+            "type": {
+              "array": [
+                "u8",
+                11
+              ]
+            }
+          },
+          {
+            "name": "passWins",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "doubles",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "GlobalGameState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "gameEpoch",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "currentDice",
+            "type": "u8"
+          },
+          {
+            "name": "currentDie1",
+            "type": "u8"
+          },
+          {
+            "name": "currentDie2",
+            "type": "u8"
+          },
+          {
+            "name": "currentPoint",
+            "type": "u8"
+          },
+          {
+            "name": "gamePhase",
+            "type": "u8"
+          },
+          {
+            "name": "padding1",
+            "type": {
+              "array": [
+                "u8",
+                3
+              ]
+            }
+          },
+          {
+            "name": "epochStartSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "nextRollSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "shooterEstablishedEpoch",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "totalActiveBets",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "epochRollCount",
+            "type": {
+              "array": [
+                "u8",
+                4
+              ]
+            }
+          },
+          {
+            "name": "padding2",
+            "type": {
+              "array": [
+                "u8",
+                4
+              ]
+            }
+          },
+          {
+            "name": "treasury",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "rngAuthority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "crapTokenMint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "devModeEnabled",
+            "type": "u8"
+          },
+          {
+            "name": "paused",
+            "type": "u8"
+          },
+          {
+            "name": "useSecureRng",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "padding3",
+            "type": {
+              "array": [
+                "u8",
+                4
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ScalablePlayerState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "player",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "balance",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "activeTournament",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "currentEpoch",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "totalWagered",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "totalWon",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "lastBetSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "lastClaimSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "lastTournamentUpdateSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "verificationTier",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RngState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "epoch",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "phase",
+            "type": "u8"
+          },
+          {
+            "name": "hashCount",
+            "type": "u8"
+          },
+          {
+            "name": "padding1",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "bettingStartSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "collectionStartSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "finalizationSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "blockHashes",
+            "type": {
+              "array": [
+                "u8",
+                320
+              ]
+            }
+          },
+          {
+            "name": "finalValue",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "padding2",
+            "type": {
+              "array": [
+                "u8",
+                7
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Treasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "tokenMint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "vault",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "totalDeposits",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "totalWithdrawals",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "totalPayouts",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "totalBetsPlaced",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "totalBetsSettled",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "lastUpdateSlot",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "emergencyShutdown",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "origin": "shank",
+    "address": "2yxPAyKVGMz6trfp8caRMWCoY5psMq6H1r4cuynLrvoX"
+  }
+}

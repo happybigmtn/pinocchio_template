@@ -19,22 +19,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "account-data-template"
-version = "0.1.0"
-dependencies = [
- "bytemuck",
- "mollusk-svm",
- "pinocchio",
- "pinocchio-helper",
- "pinocchio-log",
- "pinocchio-pubkey",
- "pinocchio-system",
- "shank",
- "solana-program-runtime",
- "solana-sdk",
-]
-
-[[package]]
 name = "addr2line"
 version = "0.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -462,6 +446,12 @@ dependencies = [
 
 [[package]]
 name = "bs58"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
+
+[[package]]
+name = "bs58"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf88ba1141d185c399bee5288d850d63b8369520c1eafc32a0430b5b6c287bf4"
@@ -623,12 +613,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "craps-pinocchio"
+version = "0.1.0"
+dependencies = [
+ "bs58 0.4.0",
+ "bytemuck",
+ "mollusk-svm",
+ "pinocchio",
+ "pinocchio-helper",
+ "pinocchio-log",
+ "pinocchio-pubkey",
+ "pinocchio-system",
+ "pinocchio-token",
+ "shank",
+ "solana-program-runtime",
+ "solana-sdk",
+]
+
+[[package]]
 name = "crc32fast"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a97769d94ddab943e4510d138150169a2758b5ef3eb191a9ee688de3e23ef7b3"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "create-token"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "mollusk-svm",
+ "pinocchio",
+ "pinocchio-helper",
+ "pinocchio-log",
+ "pinocchio-pubkey",
+ "pinocchio-system",
+ "pinocchio-token",
+ "shank",
+ "solana-program-runtime",
+ "solana-sdk",
 ]
 
 [[package]]
@@ -882,6 +907,22 @@ name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+
+[[package]]
+name = "favorites"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "mollusk-svm",
+ "pinocchio",
+ "pinocchio-helper",
+ "pinocchio-log",
+ "pinocchio-pubkey",
+ "pinocchio-system",
+ "shank",
+ "solana-program-runtime",
+ "solana-sdk",
+]
 
 [[package]]
 name = "feature-probe"
@@ -1955,6 +1996,16 @@ name = "pinocchio-system"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f75423420ae70aa748cf611cab14cfd00af08d0d2d3d258cb0cf5e2880ec19c"
+dependencies = [
+ "pinocchio",
+ "pinocchio-pubkey",
+]
+
+[[package]]
+name = "pinocchio-token"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d037f645db5ed4df9163362f1716932feb987a82f70caf15d0259cfeef82f4c"
 dependencies = [
  "pinocchio",
  "pinocchio-pubkey",
@@ -3448,7 +3499,7 @@ dependencies = [
  "blake3",
  "borsh 0.10.4",
  "borsh 1.5.7",
- "bs58",
+ "bs58 0.5.1",
  "bytemuck",
  "console_error_panic_hook",
  "console_log",
@@ -3741,7 +3792,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8cc0e4a7635b902791c44b6581bfb82f3ada32c5bc0929a64f39fe4bb384c86a"
 dependencies = [
  "bincode",
- "bs58",
+ "bs58 0.5.1",
  "getrandom 0.1.16",
  "js-sys",
  "serde",
@@ -3820,7 +3871,7 @@ version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "86280da8b99d03560f6ab5aca9de2e38805681df34e0bb8f238e69b29433b9df"
 dependencies = [
- "bs58",
+ "bs58 0.5.1",
  "proc-macro2",
  "quote",
  "syn 2.0.104",

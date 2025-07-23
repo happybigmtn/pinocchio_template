@@ -171,7 +171,8 @@ update_cargo_toml() {
         local category_wildcard="\"$CATEGORY/*\""
         
         # If category wildcard doesn't exist, add it
-        if ! grep -q "$category_wildcard" Cargo.toml; then
+        # Use more precise grep to avoid false positives
+        if ! grep -qE "^[[:space:]]*\"$CATEGORY/\*\"[[:space:]]*,?[[:space:]]*$" Cargo.toml; then
             echo -e "${YELLOW}Adding $CATEGORY category to workspace members...${NC}"
             # Add the category wildcard to members array
             sed -i "/members = \[/,/\]/ s/\]/  \"$CATEGORY\/*\",\n\]/" Cargo.toml
@@ -205,9 +206,9 @@ update_rust_source() {
         sed -i "s/pinocchio_pubkey::declare_id!(\"[^\"]*\")/pinocchio_pubkey::declare_id!(\"$new_program_id\")/g" "$target_dir/src/lib.rs"
     fi
     
-    # Update other Rust files
-    find "$target_dir/src" -name "*.rs" -exec sed -i "s/$template_name_snake/$program_name_snake/g" {} \;
-    find "$target_dir/src" -name "*.rs" -exec sed -i "s/$template_name_upper/$program_name_upper/g" {} \;
+    # Update other Rust files (excluding state/mod.rs to preserve module names)
+    find "$target_dir/src" -name "*.rs" ! -path "*/state/mod.rs" -exec sed -i "s/$template_name_snake/$program_name_snake/g" {} \;
+    find "$target_dir/src" -name "*.rs" ! -path "*/state/mod.rs" -exec sed -i "s/$template_name_upper/$program_name_upper/g" {} \;
     
     # Also update test files and utilities
     find "$target_dir/tests" -name "*.rs" -exec sed -i "s/$template_name_snake/$program_name_snake/g" {} \; 2>/dev/null || true

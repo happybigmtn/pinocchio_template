@@ -56,17 +56,18 @@ detect_program_info() {
 generate_idl() {
     echo -e "${BLUE}Generating IDL for $PROGRAM_NAME...${NC}"
     
-    local program_name_underscore=$(echo "$PROGRAM_NAME" | tr '-' '_')
-    local crate_root="$CATEGORY/$program_name_underscore"
+    # Use the actual directory name (which should match the program structure)
+    local crate_root="$CATEGORY/$PROGRAM_NAME"
     
     # Check if the crate root exists
     if [ ! -d "$ROOT_DIR/$crate_root" ]; then
-        echo -e "${YELLOW}Warning: Crate root $crate_root not found, trying with original name...${NC}"
-        crate_root="$CATEGORY/$PROGRAM_NAME"
+        echo -e "${RED}Error: Program directory not found at $crate_root${NC}"
+        exit 1
     fi
     
-    if [ ! -d "$ROOT_DIR/$crate_root" ]; then
-        echo -e "${RED}Error: Program directory not found at $crate_root${NC}"
+    # Verify Cargo.toml exists
+    if [ ! -f "$ROOT_DIR/$crate_root/Cargo.toml" ]; then
+        echo -e "${RED}Error: Cargo.toml not found in $crate_root${NC}"
         exit 1
     fi
     
